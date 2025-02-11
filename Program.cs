@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartCondoApi.Models;
 
-var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 //var builder = WebApplication.CreateBuilder(args);
 
