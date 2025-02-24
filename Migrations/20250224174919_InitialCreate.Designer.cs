@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250211172624_InitialCreate")]
+    [Migration("20250224174919_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -37,7 +37,7 @@ namespace SmartCondoApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool?>("Enabled")
+                    b.Property<bool>("Enabled")
                         .HasColumnType("boolean");
 
                     b.Property<DateOnly>("Expiration")
@@ -73,6 +73,9 @@ namespace SmartCondoApi.Migrations
                     b.Property<int>("ServiceTypeId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("UserLoginId")
                         .HasColumnType("integer");
 
@@ -80,7 +83,7 @@ namespace SmartCondoApi.Migrations
 
                     b.HasIndex("ServiceTypeId");
 
-                    b.HasIndex("UserLoginId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Services");
                 });
@@ -140,21 +143,19 @@ namespace SmartCondoApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SmartCondoApi.Models.User", "UserLogin")
+                    b.HasOne("SmartCondoApi.Models.User", "User")
                         .WithMany("Services")
-                        .HasForeignKey("UserLoginId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("ServiceType");
 
-                    b.Navigation("UserLogin");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.User", b =>
                 {
                     b.HasOne("SmartCondoApi.Models.Login", "Login")
-                        .WithOne("UserLogin")
+                        .WithOne("User")
                         .HasForeignKey("SmartCondoApi.Models.User", "LoginId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -164,8 +165,7 @@ namespace SmartCondoApi.Migrations
 
             modelBuilder.Entity("SmartCondoApi.Models.Login", b =>
                 {
-                    b.Navigation("UserLogin")
-                        .IsRequired();
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.User", b =>

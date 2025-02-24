@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartCondoApi.Models;
 
@@ -10,12 +11,14 @@ namespace SmartCondoApi.Controllers
     {
 
         [HttpGet]
+        [Authorize]
         public async Task<IEnumerable<Service>> Get()
         {
             return await _context.Services.ToListAsync();
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> Get(int id)
         {
             if (id < 1)
@@ -27,6 +30,7 @@ namespace SmartCondoApi.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Post(Service service)
         {
             _context.Add(service);
@@ -36,6 +40,7 @@ namespace SmartCondoApi.Controllers
 
 
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> Put(Service serviceData)
         {
             if (serviceData == null || serviceData.ServiceId == 0)
@@ -49,13 +54,14 @@ namespace SmartCondoApi.Controllers
             service.Description = serviceData.Description;
             service.ServiceData = serviceData.ServiceData;
             service.ServiceType = serviceData.ServiceType;
-            service.UserLogin = serviceData.UserLogin;
+            service.User = serviceData.User;
 
             await _context.SaveChangesAsync();
             return Ok();
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             if (id < 1)

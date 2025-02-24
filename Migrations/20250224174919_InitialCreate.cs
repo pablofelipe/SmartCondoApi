@@ -21,7 +21,7 @@ namespace SmartCondoApi.Migrations
                     Email = table.Column<string>(type: "text", nullable: false),
                     Password = table.Column<string>(type: "text", nullable: false),
                     Expiration = table.Column<DateOnly>(type: "date", nullable: false),
-                    Enabled = table.Column<bool>(type: "boolean", nullable: true)
+                    Enabled = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -73,7 +73,8 @@ namespace SmartCondoApi.Migrations
                     Description = table.Column<string>(type: "text", nullable: false),
                     ServiceData = table.Column<byte[]>(type: "bytea", nullable: true),
                     UserLoginId = table.Column<int>(type: "integer", nullable: false),
-                    ServiceTypeId = table.Column<int>(type: "integer", nullable: false)
+                    ServiceTypeId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -85,11 +86,10 @@ namespace SmartCondoApi.Migrations
                         principalColumn: "ServiceTypeId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Services_Users_UserLoginId",
-                        column: x => x.UserLoginId,
+                        name: "FK_Services_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateIndex(
@@ -98,9 +98,9 @@ namespace SmartCondoApi.Migrations
                 column: "ServiceTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Services_UserLoginId",
+                name: "IX_Services_UserId",
                 table: "Services",
-                column: "UserLoginId");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_LoginId",

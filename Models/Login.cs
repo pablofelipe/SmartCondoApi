@@ -1,16 +1,15 @@
-﻿namespace SmartCondoApi.Models;
+﻿using System.Text.Json.Serialization;
 
-public partial class Login
+namespace SmartCondoApi.Models;
+
+public class Login
 {
-    public int LoginId { get; set; }
-
-    public string Email { get; set; } = null!;
-
-    public string Password { get; set; } = null!;
-
+    public int LoginId { get; set; } // Chave primária
+    public string Email { get; set; }
+    public string Password { get; set; } // Senha com hash
     public DateOnly Expiration { get; set; }
+    public bool Enabled { get; set; }
 
-    public bool? Enabled { get; set; }
-
-    public virtual User UserLogin { get; set; } = null!;
+    [JsonIgnore]
+    public User? User { get; set; }
 }

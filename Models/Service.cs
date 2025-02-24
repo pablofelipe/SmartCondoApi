@@ -14,7 +14,7 @@ public partial class Service
 
     public int ServiceTypeId { get; set; }
 
-    public virtual ServiceType ServiceType { get; set; } = null!;
+    public ServiceType ServiceType { get; set; } = null!;
 
-    public virtual User UserLogin { get; set; } = null!;
+    public User? User { get; set; } = null;
 }

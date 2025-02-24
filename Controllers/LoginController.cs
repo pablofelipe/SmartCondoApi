@@ -1,52 +1,74 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SmartCondoApi.Domain;
 using SmartCondoApi.Models;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace SmartCondoApi.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class LoginController(SmartCondoContext dbContext) : ControllerBase
+    public class LoginController(SmartCondoContext dbContext, IConfiguration configuration) : ControllerBase
     {
-        [HttpPost(Name = "Login")]
+        private readonly SmartCondoContext _dbContext = dbContext;
+        private readonly IConfiguration _configuration = configuration;
+
+        [HttpPost(Name = "login")]
         [AllowAnonymous]
-        public ActionResult PostLogin(string user, string pwd)
+        public async Task<ActionResult> Login(string user, string secret)
         {
-            var userLogin = dbContext.Logins.FirstOrDefault(x => x.Email == user);
+            var dbData = await _dbContext.Logins.FirstOrDefaultAsync(x => x.Email == user);
 
-            if (null == userLogin)
-                return NotFound(userLogin);
+            if (null == dbData)
+                return NotFound(user);
 
-            if (userLogin.Enabled == false)
+            if (dbData.Enabled == false)
                 return BadRequest("Usuario desabilitado");
 
             DateOnly dateOnlyToday = DateOnly.FromDateTime(DateTime.Now);
 
-            if (userLogin.Expiration < dateOnlyToday)
+            if (dbData.Expiration < dateOnlyToday)
                 return BadRequest("Cadastro de usuario expirado");
 
-            if (userLogin.Password != pwd)
-                return BadRequest("Senha incorreta");
+            string text = new SecurityHandler().EncryptText(secret);
 
-            return Ok(GenerateJwtToken());
+            if (text != dbData.Password)
+                return Unauthorized();
+
+            var dbUser = await _dbContext.Users.FirstOrDefaultAsync(x => x.LoginId == dbData.LoginId);
+
+            if (null == dbUser)
+                return NotFound(dbUser);
+
+            var token = GenerateJwtToken(dbUser);
+
+            return Ok(new { token });
         }
 
-        private static string GenerateJwtToken()
+        private string GenerateJwtToken(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("149a72f4489089d2730a870a00c1bf9e84638505a40f3948496ca0476a645dfe810ce6e05487b07b747f618947ce0ac66199d79e7c4b7b7876f2467c5344558e\r\nffac2ef204809ab2d02853a9610635510294015e6d339160f74233580fb3afed4c5a3d0a91cc3ba9b368f515e1e001d1620e4b9a3e6f6c3af66b78df04c9400e\r\n254ce9ad8077f7c4f9989e53921e988bbb6d5fde329df396f90c3efab0fcaf489c323361cb0fc74b70bf02818ba2fdd45442bbe0e3e3bb4a1c3fe4303758baaf\r\n87448dedeb9ee2c68ff7809941992f88f99ee8aec3b8eeda7d48cac56a19dffdddf2fe64b8eb4ab82578252e72b7fc8ec1f271908c5c70f0f5bbe09aae99f5b3\r\n36906258c0f83cea5bec588c54cf6f9eb7f1d7fdf704a82e934ad8193153a7a6e46839c4e327a678c005d3116946cd87bb9857f45669c76f905dab52975578e0"));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.Aes256CbcHmacSha512);
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Login.Email),
+                new Claim(ClaimTypes.Role, user.Type == 1 ? "Admin" : "User") // Exemplo de role
+            };
 
             var token = new JwtSecurityToken(
-                issuer: "issuer",
-                audience: "audience",
-                claims: [],
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds
-                );
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(1), // Tempo de expiração do token
+                signingCredentials: credentials
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

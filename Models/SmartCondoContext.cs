@@ -26,5 +26,15 @@ namespace SmartCondoApi.Models
 
         public DbSet<User> Users { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Configuração do relacionamento 1x1 entre User e Login
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Login) // User tem um Login
+                .WithOne(l => l.User) // Login tem um User
+                .HasForeignKey<User>(u => u.LoginId); // Chave estrangeira em User
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

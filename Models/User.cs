@@ -1,18 +1,15 @@
 ﻿namespace SmartCondoApi.Models;
 
-public partial class User
+public class User
 {
-    public int UserId { get; set; }
+    public int UserId { get; set; } // Chave primária
+    public string Name { get; set; }
+    public string Address { get; set; }
+    public int Type { get; set; } // 1 = Admin, 2 = Standard
 
-    public string Name { get; set; } = null!;
-
-    public string Address { get; set; } = null!;
-
-    public int Type { get; set; }
-
+    // Chave estrangeira para Login
     public int LoginId { get; set; }
+    public Login Login { get; set; } // Propriedade de navegação para Login
 
-    public virtual Login Login { get; set; } = null!;
-
-    public virtual ICollection<Service> Services { get; set; } = new List<Service>();
+    public ICollection<Service>? Services { get; set; } = null;
 }
