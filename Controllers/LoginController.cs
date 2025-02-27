@@ -20,8 +20,11 @@ namespace SmartCondoApi.Controllers
 
         [HttpPost(Name = "login")]
         [AllowAnonymous]
-        public async Task<ActionResult> Login(string user, string secret)
+        public async Task<ActionResult> Login([FromBody] Dictionary<string, string> body)
         {
+            if (!body.TryGetValue("user", out string? user) || !body.TryGetValue("secret", out string? secret))
+                return BadRequest("Os campos são de preenchimento obrigatório.");
+
             var dbData = await _dbContext.Logins.FirstOrDefaultAsync(x => x.Email == user);
 
             if (null == dbData)
