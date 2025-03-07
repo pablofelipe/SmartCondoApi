@@ -3,18 +3,20 @@
 public partial class Service
 {
     public int ServiceId { get; set; }
-
-    public DateOnly ServiceDate { get; set; }
-
-    public string Description { get; set; } = null!;
-
-    public byte[]? ServiceData { get; set; }
-
-    public int UserLoginId { get; set; }
+    public DateTime ScheduledDate { get; set; }
+    public string Status { get; set; }
+    public string ProviderName { get; set; }
+    public string ProviderContact { get; set; }
+    public string Notes { get; set; }
 
     public int ServiceTypeId { get; set; }
+    public ServiceType ServiceType { get; set; }
 
-    public ServiceType ServiceType { get; set; } = null!;
+    public int CondominiumId { get; set; }
+    public Condominium Condominium { get; set; }
 
-    public User? User { get; set; } = null;
+    public int? TowerId { get; set; }
+    public Tower Tower { get; set; }
+
+    public int? FloorId { get; set; }
 }

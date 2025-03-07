@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace SmartCondoApi.Domain
+namespace SmartCondoApi.Infra
 {
     public class SecurityHandler
     {

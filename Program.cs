@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SmartCondoApi.Models;
+using SmartCondoApi.Services;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +71,19 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddScoped(provider =>
+{
+    var dbContext = provider.GetRequiredService<SmartCondoContext>();
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new LoginService(dbContext, configuration);
+});
+
+builder.Services.AddScoped(provider =>
+{
+    var dbContext = provider.GetRequiredService<SmartCondoContext>();
+    return new UserService(dbContext);
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -79,6 +94,12 @@ builder.Services.AddCors(options =>
                    .AllowAnyMethod(); // Permitir qualquer método (GET, POST, etc.)
         });
 });
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 
 builder.Services.AddControllers();
 
