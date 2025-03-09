@@ -53,7 +53,6 @@ namespace SmartCondoApi.Services
             existingUser.Address = updatedUser.Address;
             existingUser.Type = updatedUser.Type;
             existingUser.PersonalTaxID = updatedUser.PersonalTaxID;
-            existingUser.LoginId = updatedUser.LoginId;
             existingUser.CondominiumId = updatedUser.CondominiumId;
             existingUser.TowerId = updatedUser.TowerId;
             existingUser.FloorId = updatedUser.FloorId;

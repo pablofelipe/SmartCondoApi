@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250307174520_InitialCreate")]
+    [Migration("20250309130706_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,46 +24,6 @@ namespace SmartCondoApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("SmartCondoApi.Models.Car", b =>
-                {
-                    b.Property<int>("CarId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CarId"));
-
-                    b.Property<string>("Brand")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Enabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LicensePlate")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Model")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("CarId");
-
-                    b.HasIndex("LicensePlate")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Cars");
-                });
 
             modelBuilder.Entity("SmartCondoApi.Models.Condominium", b =>
                 {
@@ -114,9 +74,15 @@ namespace SmartCondoApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("LoginId");
 
                     b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Logins");
@@ -282,9 +248,6 @@ namespace SmartCondoApi.Migrations
                     b.Property<int?>("FloorId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("LoginId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -303,9 +266,6 @@ namespace SmartCondoApi.Migrations
 
                     b.HasIndex("CondominiumId");
 
-                    b.HasIndex("LoginId")
-                        .IsUnique();
-
                     b.HasIndex("PersonalTaxID")
                         .IsUnique();
 
@@ -314,11 +274,54 @@ namespace SmartCondoApi.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("SmartCondoApi.Models.Car", b =>
+            modelBuilder.Entity("SmartCondoApi.Models.Vehicle", b =>
+                {
+                    b.Property<int>("VehicleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("VehicleId"));
+
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LicensePlate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("VehicleId");
+
+                    b.HasIndex("LicensePlate")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Vehicles");
+                });
+
+            modelBuilder.Entity("SmartCondoApi.Models.Login", b =>
                 {
                     b.HasOne("SmartCondoApi.Models.User", "User")
-                        .WithMany("Cars")
-                        .HasForeignKey("UserId")
+                        .WithOne("Login")
+                        .HasForeignKey("SmartCondoApi.Models.Login", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -399,21 +402,24 @@ namespace SmartCondoApi.Migrations
                         .WithMany("Users")
                         .HasForeignKey("CondominiumId");
 
-                    b.HasOne("SmartCondoApi.Models.Login", "Login")
-                        .WithOne("User")
-                        .HasForeignKey("SmartCondoApi.Models.User", "LoginId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("SmartCondoApi.Models.Tower", "Tower")
                         .WithMany("Users")
                         .HasForeignKey("TowerId");
 
                     b.Navigation("Condominium");
 
-                    b.Navigation("Login");
-
                     b.Navigation("Tower");
+                });
+
+            modelBuilder.Entity("SmartCondoApi.Models.Vehicle", b =>
+                {
+                    b.HasOne("SmartCondoApi.Models.User", "User")
+                        .WithMany("Vehicles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Condominium", b =>
@@ -425,11 +431,6 @@ namespace SmartCondoApi.Migrations
                     b.Navigation("Towers");
 
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("SmartCondoApi.Models.Login", b =>
-                {
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.ServiceType", b =>
@@ -448,11 +449,13 @@ namespace SmartCondoApi.Migrations
 
             modelBuilder.Entity("SmartCondoApi.Models.User", b =>
                 {
-                    b.Navigation("Cars");
+                    b.Navigation("Login");
 
                     b.Navigation("ReceivedMessages");
 
                     b.Navigation("SentMessages");
+
+                    b.Navigation("Vehicles");
                 });
 #pragma warning restore 612, 618
         }

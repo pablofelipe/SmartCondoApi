@@ -10,6 +10,7 @@ public class Login
     public DateOnly Expiration { get; set; }
     public bool Enabled { get; set; }
 
+    public int UserId { get; set; }
     [JsonIgnore]
-    public User? User { get; set; }
+    public User User { get; set; }
 }

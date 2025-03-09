@@ -29,22 +29,6 @@ namespace SmartCondoApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Logins",
-                columns: table => new
-                {
-                    LoginId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: false),
-                    Expiration = table.Column<DateOnly>(type: "date", nullable: false),
-                    Enabled = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Logins", x => x.LoginId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ServiceTypes",
                 columns: table => new
                 {
@@ -127,7 +111,6 @@ namespace SmartCondoApi.Migrations
                     Address = table.Column<string>(type: "text", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     PersonalTaxID = table.Column<string>(type: "text", nullable: false),
-                    LoginId = table.Column<int>(type: "integer", nullable: false),
                     CondominiumId = table.Column<int>(type: "integer", nullable: true),
                     TowerId = table.Column<int>(type: "integer", nullable: true),
                     FloorId = table.Column<int>(type: "integer", nullable: true),
@@ -142,12 +125,6 @@ namespace SmartCondoApi.Migrations
                         principalTable: "Condominiums",
                         principalColumn: "CondominiumId");
                     table.ForeignKey(
-                        name: "FK_Users_Logins_LoginId",
-                        column: x => x.LoginId,
-                        principalTable: "Logins",
-                        principalColumn: "LoginId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Users_Towers_TowerId",
                         column: x => x.TowerId,
                         principalTable: "Towers",
@@ -155,23 +132,22 @@ namespace SmartCondoApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Cars",
+                name: "Logins",
                 columns: table => new
                 {
-                    CarId = table.Column<int>(type: "integer", nullable: false)
+                    LoginId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    LicensePlate = table.Column<string>(type: "text", nullable: false),
-                    Brand = table.Column<string>(type: "text", nullable: false),
-                    Model = table.Column<string>(type: "text", nullable: false),
-                    Color = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    Expiration = table.Column<DateOnly>(type: "date", nullable: false),
                     Enabled = table.Column<bool>(type: "boolean", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cars", x => x.CarId);
+                    table.PrimaryKey("PK_Logins", x => x.LoginId);
                     table.ForeignKey(
-                        name: "FK_Cars_Users_UserId",
+                        name: "FK_Logins_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
@@ -220,21 +196,41 @@ namespace SmartCondoApi.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Cars_LicensePlate",
-                table: "Cars",
-                column: "LicensePlate",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Cars_UserId",
-                table: "Cars",
-                column: "UserId");
+            migrationBuilder.CreateTable(
+                name: "Vehicles",
+                columns: table => new
+                {
+                    VehicleId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    LicensePlate = table.Column<string>(type: "text", nullable: false),
+                    Brand = table.Column<string>(type: "text", nullable: false),
+                    Model = table.Column<string>(type: "text", nullable: false),
+                    Color = table.Column<string>(type: "text", nullable: false),
+                    Enabled = table.Column<bool>(type: "boolean", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Vehicles", x => x.VehicleId);
+                    table.ForeignKey(
+                        name: "FK_Vehicles_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Logins_Email",
                 table: "Logins",
                 column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logins_UserId",
+                table: "Logins",
+                column: "UserId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -283,12 +279,6 @@ namespace SmartCondoApi.Migrations
                 column: "CondominiumId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_LoginId",
-                table: "Users",
-                column: "LoginId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Users_PersonalTaxID",
                 table: "Users",
                 column: "PersonalTaxID",
@@ -298,13 +288,24 @@ namespace SmartCondoApi.Migrations
                 name: "IX_Users_TowerId",
                 table: "Users",
                 column: "TowerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Vehicles_LicensePlate",
+                table: "Vehicles",
+                column: "LicensePlate",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Vehicles_UserId",
+                table: "Vehicles",
+                column: "UserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Cars");
+                name: "Logins");
 
             migrationBuilder.DropTable(
                 name: "Messages");
@@ -313,13 +314,13 @@ namespace SmartCondoApi.Migrations
                 name: "Services");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Vehicles");
 
             migrationBuilder.DropTable(
                 name: "ServiceTypes");
 
             migrationBuilder.DropTable(
-                name: "Logins");
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Towers");

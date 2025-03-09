@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace SmartCondoApi.Models
 {
@@ -31,48 +30,37 @@ namespace SmartCondoApi.Models
 
         public DbSet<Tower> Towers { get; set; }
 
-        public DbSet<Car> Cars { get; set; }
+        public DbSet<Vehicle> Vehicles { get; set; }
 
         public DbSet<Message> Messages{ get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Login>()
-                .HasIndex(c => c.Email)
-                .IsUnique();
-
             modelBuilder.Entity<User>()
-                .HasOne(u => u.Login) // User tem um Login
-                .WithOne(l => l.User) // Login tem um User
-                .HasForeignKey<User>(u => u.LoginId); // Chave estrangeira em User
+                .HasOne(e => e.Login)
+                .WithOne(e => e.User)
+                .HasForeignKey<Login>(e => e.UserId)
+                .IsRequired();
 
             modelBuilder.Entity<User>()
                 .HasIndex(c => c.PersonalTaxID)
                 .IsUnique();
 
-            modelBuilder.Entity<Condominium>()
-                .HasMany(c => c.Users)
-                .WithOne(u => u.Condominium)
-                .HasForeignKey(u => u.CondominiumId);
-
-            modelBuilder.Entity<ServiceType>()
-                .HasMany(st => st.Services)
-                .WithOne(s => s.ServiceType)
-                .HasForeignKey(s => s.ServiceTypeId);
-
-            modelBuilder.Entity<Condominium>()
-                .HasMany(c => c.Services)
-                .WithOne(s => s.Condominium)
-                .HasForeignKey(s => s.CondominiumId);
+            modelBuilder.Entity<User>()
+                .HasOne(e => e.Condominium)
+                .WithMany(e => e.Users)
+                .IsRequired(false);
 
             modelBuilder.Entity<User>()
-                .HasMany(u => u.Cars) // Um User tem muitos Cars
-                .WithOne(c => c.User) // Um Car pertence a um User
-                .HasForeignKey(c => c.UserId); // Chave estrangeira em Car
+                .HasOne(e => e.Tower)
+                .WithMany(e => e.Users)
+                .IsRequired(false);
 
-            modelBuilder.Entity<Car>()
-                .HasIndex(c => c.LicensePlate)
-                .IsUnique();
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Vehicles)
+                .WithOne(c => c.User)
+                .HasForeignKey(c => c.UserId)
+                .IsRequired();
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.SentMessages)
@@ -85,6 +73,43 @@ namespace SmartCondoApi.Models
                 .WithOne(m => m.RecipientUser)
                 .HasForeignKey(m => m.RecipientId)
                 .OnDelete(DeleteBehavior.Restrict); // Evita exclusão em cascata
+
+
+            modelBuilder.Entity<Login>()
+                .HasIndex(c => c.Email)
+                .IsUnique();
+
+
+            modelBuilder.Entity<Condominium>()
+                .HasMany(c => c.Users)
+                .WithOne(u => u.Condominium)
+                .HasForeignKey(u => u.CondominiumId);
+
+            modelBuilder.Entity<Condominium>()
+                .HasMany(c => c.Services)
+                .WithOne(s => s.Condominium)
+                .HasForeignKey(s => s.CondominiumId);
+
+
+            modelBuilder.Entity<ServiceType>()
+                .HasMany(st => st.Services)
+                .WithOne(s => s.ServiceType)
+                .HasForeignKey(s => s.ServiceTypeId);
+
+
+            modelBuilder.Entity<Vehicle>()
+                .Property(u => u.VehicleId)
+                .ValueGeneratedOnAdd(); // Valor gerado automaticamente ao adicionar
+
+            modelBuilder.Entity<Vehicle>()
+                .HasIndex(c => c.LicensePlate)
+                .IsUnique();
+
+            modelBuilder.Entity<Vehicle>()
+                .HasOne(u => u.User)
+                .WithMany(v => v.Vehicles)
+                .HasForeignKey(f => f.UserId)
+                .IsRequired();
 
             base.OnModelCreating(modelBuilder);
         }
