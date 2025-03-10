@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250309130706_InitialCreate")]
+    [Migration("20250310193328_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

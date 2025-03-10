@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services;
@@ -14,12 +15,12 @@ namespace SmartCondoApi.Controllers
         // Adicionar um usuário
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AddUser([FromBody] User user)
+        public async Task<IActionResult> AddUser([FromBody] UserCreateDTO userCreateDTO)
         {
             try
             {
-                await _userService.AddUserAsync(user);
-                return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, user);
+                var userResponseDTO = await _userService.AddUserAsync(userCreateDTO);
+                return Ok(userResponseDTO);
             }
             catch (ArgumentException ex)
             {
@@ -32,14 +33,14 @@ namespace SmartCondoApi.Controllers
         }
 
         // Atualizar um usuário
-        [HttpPut]
+        [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> UpdateUser([FromBody] User updatedUser)
+        public async Task<IActionResult> UpdateUser(long id, [FromBody] UserUpdateDTO updatedUser)
         {
             try
             {
-                await _userService.UpdateUserAsync(updatedUser);
-                return Ok();
+                var userResponseDTO = await _userService.UpdateUserAsync(id, updatedUser);
+                return Ok(userResponseDTO);
             }
             catch (InvalidCredentialsException ex)
             {

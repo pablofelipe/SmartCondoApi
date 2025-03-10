@@ -37,10 +37,9 @@ namespace SmartCondoApi.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
-                .HasOne(e => e.Login)
-                .WithOne(e => e.User)
-                .HasForeignKey<Login>(e => e.UserId)
-                .IsRequired();
+                .HasOne(u => u.Login)
+                .WithOne(l => l.User)
+                .HasForeignKey<Login>(l => l.UserId);
 
             modelBuilder.Entity<User>()
                 .HasIndex(c => c.PersonalTaxID)
@@ -113,20 +112,5 @@ namespace SmartCondoApi.Models
 
             base.OnModelCreating(modelBuilder);
         }
-
-        //public override int SaveChanges()
-        //{
-        //    var entities = ChangeTracker.Entries()
-        //        .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified)
-        //        .Select(e => e.Entity);
-
-        //    foreach (var entity in entities)
-        //    {
-        //        var validationContext = new ValidationContext(entity);
-        //        Validator.ValidateObject(entity, validationContext, validateAllProperties: true);
-        //    }
-
-        //    return base.SaveChanges();
-        //}
     }
 }
