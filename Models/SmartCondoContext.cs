@@ -20,6 +20,8 @@ namespace SmartCondoApi.Models
 
         public DbSet<Login> Logins { get; set; }
 
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+
         public DbSet<User> Users { get; set; }
 
         public DbSet<ServiceType> ServiceTypes { get; set; }

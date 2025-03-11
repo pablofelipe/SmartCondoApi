@@ -95,6 +95,13 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddScoped<IForgotPasswordService>(provider =>
+{
+    var dbContext = provider.GetRequiredService<SmartCondoContext>();
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new ForgotPasswordService(dbContext, configuration);
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
