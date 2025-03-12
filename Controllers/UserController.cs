@@ -22,6 +22,10 @@ namespace SmartCondoApi.Controllers
                 var userResponseDTO = await _userService.AddUserAsync(userCreateDTO);
                 return Ok(userResponseDTO);
             }
+            catch (InvalidCredentialsException ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);

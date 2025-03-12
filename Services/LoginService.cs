@@ -33,7 +33,9 @@ namespace SmartCondoApi.Services
             if (dbLogin.Expiration < dateOnlyToday)
                 throw new UserExpiredException("Usuário expirado.");
 
-            string text = new SecurityHandler().EncryptText(secret);
+            var securitHandler = new SecurityHandler();
+
+            string text = securitHandler.EncryptText(secret);
 
             if (text != dbLogin.Password)
                 throw new IncorrectPasswordException("Senha incorreta.");

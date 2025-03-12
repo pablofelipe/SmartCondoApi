@@ -15,6 +15,8 @@ namespace SmartCondoApi.dto
         public int? TowerId { get; set; }
         public int? FloorId { get; set; }
         public int? Apartment { get; set; }
+        public int? ParkingSpaceNumber { get; set; }
+
         public ICollection<VehicleDTO> Vehicles { get; set; } = new List<VehicleDTO>();
     }
 }

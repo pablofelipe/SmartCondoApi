@@ -114,7 +114,8 @@ namespace SmartCondoApi.Migrations
                     CondominiumId = table.Column<int>(type: "integer", nullable: true),
                     TowerId = table.Column<int>(type: "integer", nullable: true),
                     FloorId = table.Column<int>(type: "integer", nullable: true),
-                    Apartment = table.Column<int>(type: "integer", nullable: true)
+                    Apartment = table.Column<int>(type: "integer", nullable: true),
+                    ParkingSpaceNumber = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -221,6 +222,27 @@ namespace SmartCondoApi.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "PasswordResetTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    Expires = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LoginId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PasswordResetTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PasswordResetTokens_Logins_LoginId",
+                        column: x => x.LoginId,
+                        principalTable: "Logins",
+                        principalColumn: "LoginId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Logins_Email",
                 table: "Logins",
@@ -252,6 +274,11 @@ namespace SmartCondoApi.Migrations
                 name: "IX_Messages_TowerId",
                 table: "Messages",
                 column: "TowerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PasswordResetTokens_LoginId",
+                table: "PasswordResetTokens",
+                column: "LoginId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Services_CondominiumId",
@@ -305,16 +332,19 @@ namespace SmartCondoApi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Logins");
+                name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "Messages");
+                name: "PasswordResetTokens");
 
             migrationBuilder.DropTable(
                 name: "Services");
 
             migrationBuilder.DropTable(
                 name: "Vehicles");
+
+            migrationBuilder.DropTable(
+                name: "Logins");
 
             migrationBuilder.DropTable(
                 name: "ServiceTypes");

@@ -6,7 +6,7 @@ namespace SmartCondoApi.Dto
     {
         public string? Name { get; set; }
         public string? Address { get; set; }
-        public UserType? Type { get; set; }
+        public int? Type { get; set; }
         public int? CondominiumId { get; set; }
         public int? TowerId { get; set; }
         public int? FloorId { get; set; }

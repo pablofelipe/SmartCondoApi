@@ -16,7 +16,7 @@ namespace SmartCondoApi.Services
             // Valida o CPF
             if (!ValidateCPF(userCreateDTO.PersonalTaxID))
             {
-                throw new ArgumentException("CPF inválido.");
+                throw new InvalidPersonalTaxIDException("CPF inválido.");
             }
 
             if (null == userCreateDTO.Login)
@@ -31,12 +31,13 @@ namespace SmartCondoApi.Services
             {
                 Name = userCreateDTO.Name,
                 Address = userCreateDTO.Address,
-                Type = userCreateDTO.Type,
+                Type = (UserType)userCreateDTO.Type,
                 PersonalTaxID = userCreateDTO.PersonalTaxID,
                 CondominiumId = userCreateDTO.CondominiumId,
                 TowerId = userCreateDTO.TowerId,
                 FloorId = userCreateDTO.FloorId,
                 Apartment = userCreateDTO.Apartment,
+                ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber,
                 Login = new Login
                 {
                     Email = userCreateDTO.Login.Email,
@@ -54,12 +55,13 @@ namespace SmartCondoApi.Services
             {
                 Name = userCreateDTO.Name,
                 Address = userCreateDTO.Address,
-                Type = userCreateDTO.Type,
+                Type = (UserType)userCreateDTO.Type,
                 PersonalTaxID = userCreateDTO.PersonalTaxID,
                 CondominiumId = userCreateDTO.CondominiumId,
                 TowerId = userCreateDTO.TowerId,
                 FloorId = userCreateDTO.FloorId,
-                Apartment = userCreateDTO.Apartment
+                Apartment = userCreateDTO.Apartment,
+                ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber
             };
         }
 
@@ -82,7 +84,7 @@ namespace SmartCondoApi.Services
 
             if (userUpdateDTO.Name != null) user.Name = userUpdateDTO.Name;
             if (userUpdateDTO.Address != null) user.Address = userUpdateDTO.Address;
-            if (userUpdateDTO.Type.HasValue) user.Type = userUpdateDTO.Type.Value;
+            if (userUpdateDTO.Type.HasValue) user.Type = (UserType)userUpdateDTO.Type.Value;
             if (userUpdateDTO.CondominiumId.HasValue) user.CondominiumId = userUpdateDTO.CondominiumId.Value;
             if (userUpdateDTO.TowerId.HasValue) user.TowerId = userUpdateDTO.TowerId.Value;
             if (userUpdateDTO.FloorId.HasValue) user.FloorId = userUpdateDTO.FloorId.Value;

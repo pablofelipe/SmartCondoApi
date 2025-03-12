@@ -41,6 +41,7 @@ public class User
 
     public int? FloorId { get; set; }
     public int? Apartment { get; set; }
+    public int? ParkingSpaceNumber { get; set; }
 
     [JsonIgnore]
     public ICollection<Vehicle> Vehicles { get; set; }

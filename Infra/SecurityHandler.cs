@@ -38,7 +38,7 @@ namespace SmartCondoApi.Infra
 
             byte[] output = Encrypt(tripleDES, text);
 
-            return Encoding.UTF8.GetString(output);
+            return Convert.ToBase64String(output);
         }
 
         private static byte[] Encrypt(TripleDES tripleDES, string texto)
@@ -48,7 +48,7 @@ namespace SmartCondoApi.Infra
             return encryptor.TransformFinalBlock(textoBytes, 0, textoBytes.Length);
         }
 
-        public string DecryptText(string text)
+        public string DecryptText(string encryptedText)
         {
             byte[] chave = File.ReadAllBytes(keyPath);
             byte[] iv = File.ReadAllBytes(ivPath);
@@ -57,14 +57,16 @@ namespace SmartCondoApi.Infra
             tripleDES.Key = chave;
             tripleDES.IV = iv;
 
-            return Decrypt(tripleDES, Encoding.UTF8.GetBytes(text));
+            byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
+            byte[] output = Decrypt(tripleDES, encryptedBytes);
+
+            return Encoding.UTF8.GetString(output);
         }
 
-        private static string Decrypt(TripleDES tripleDES, byte[] textoCriptografado)
+        private static byte[] Decrypt(TripleDES tripleDES, byte[] encryptedBytes)
         {
             using ICryptoTransform decryptor = tripleDES.CreateDecryptor();
-            byte[] textoDescriptografado = decryptor.TransformFinalBlock(textoCriptografado, 0, textoCriptografado.Length);
-            return Encoding.UTF8.GetString(textoDescriptografado);
+            return decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
         }
     }
 }

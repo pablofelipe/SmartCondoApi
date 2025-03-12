@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250310193328_InitialCreate")]
+    [Migration("20250312115202_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -129,6 +129,31 @@ namespace SmartCondoApi.Migrations
                     b.HasIndex("TowerId");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("SmartCondoApi.Models.PasswordResetToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LoginId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoginId");
+
+                    b.ToTable("PasswordResetTokens");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Service", b =>
@@ -252,6 +277,9 @@ namespace SmartCondoApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("ParkingSpaceNumber")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PersonalTaxID")
                         .IsRequired()
                         .HasColumnType("text");
@@ -360,6 +388,17 @@ namespace SmartCondoApi.Migrations
                     b.Navigation("Tower");
                 });
 
+            modelBuilder.Entity("SmartCondoApi.Models.PasswordResetToken", b =>
+                {
+                    b.HasOne("SmartCondoApi.Models.Login", "Login")
+                        .WithMany("PasswordResetTokens")
+                        .HasForeignKey("LoginId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Login");
+                });
+
             modelBuilder.Entity("SmartCondoApi.Models.Service", b =>
                 {
                     b.HasOne("SmartCondoApi.Models.Condominium", "Condominium")
@@ -431,6 +470,11 @@ namespace SmartCondoApi.Migrations
                     b.Navigation("Towers");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("SmartCondoApi.Models.Login", b =>
+                {
+                    b.Navigation("PasswordResetTokens");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.ServiceType", b =>

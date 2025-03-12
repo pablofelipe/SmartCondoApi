@@ -66,12 +66,16 @@ namespace SmartCondoApi.Services
             return new ResetPasswordResponseDto { Message = "Senha redefinida com sucesso." };
         }
 
-        private string GenerateToken()
+        private static string GenerateToken()
         {
-            using var rng = new RNGCryptoServiceProvider();
-            var tokenBytes = new byte[20];
+            using var rng = RandomNumberGenerator.Create();
+
+            var tokenBytes = new byte[32];
+
             rng.GetBytes(tokenBytes);
-            return BitConverter.ToString(tokenBytes).Replace("-", "").ToLower();
+
+            // Converte os bytes para uma string hexadecimal
+            return Convert.ToHexStringLower(tokenBytes);
         }
 
         private async Task SendEmailAsync(string to, string subject, string body)
@@ -99,8 +103,7 @@ namespace SmartCondoApi.Services
 
         private string HashPassword(string password)
         {
-            // Implemente a lógica de hashing da senha aqui
-            return password; // Substitua pelo hashing real
+            return password;
         }
     }
 }

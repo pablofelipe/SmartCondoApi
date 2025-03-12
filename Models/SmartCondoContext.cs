@@ -80,6 +80,11 @@ namespace SmartCondoApi.Models
                 .HasIndex(c => c.Email)
                 .IsUnique();
 
+            modelBuilder.Entity<PasswordResetToken>()
+                .HasOne(prt => prt.Login) 
+                .WithMany(l => l.PasswordResetTokens)
+                .HasForeignKey(prt => prt.LoginId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Condominium>()
                 .HasMany(c => c.Users)
