@@ -7,6 +7,7 @@
         public string Address { get; set; }
         public int TowerCount { get; set; }
         public bool Enabled { get; set; }
+        public int MaxUsers { get; set; }
 
         public ICollection<Tower> Towers { get; set; }
 

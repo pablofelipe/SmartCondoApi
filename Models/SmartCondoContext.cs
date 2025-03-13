@@ -22,6 +22,8 @@ namespace SmartCondoApi.Models
 
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
+        public DbSet<UserType> UserTypes { get; set; }
+
         public DbSet<User> Users { get; set; }
 
         public DbSet<ServiceType> ServiceTypes { get; set; }
@@ -46,6 +48,12 @@ namespace SmartCondoApi.Models
             modelBuilder.Entity<User>()
                 .HasIndex(c => c.PersonalTaxID)
                 .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.UserType)
+                .WithMany()
+                .HasForeignKey(u => u.UserTypeId)
+                .IsRequired();
 
             modelBuilder.Entity<User>()
                 .HasOne(e => e.Condominium)
@@ -74,7 +82,6 @@ namespace SmartCondoApi.Models
                 .WithOne(m => m.RecipientUser)
                 .HasForeignKey(m => m.RecipientId)
                 .OnDelete(DeleteBehavior.Restrict); // Evita exclusão em cascata
-
 
             modelBuilder.Entity<Login>()
                 .HasIndex(c => c.Email)
@@ -105,7 +112,7 @@ namespace SmartCondoApi.Models
 
             modelBuilder.Entity<Vehicle>()
                 .Property(u => u.VehicleId)
-                .ValueGeneratedOnAdd(); // Valor gerado automaticamente ao adicionar
+                .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Vehicle>()
                 .HasIndex(c => c.LicensePlate)

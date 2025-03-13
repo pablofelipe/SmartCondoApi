@@ -45,7 +45,12 @@ namespace SmartCondoApi.Services
             if (null == dbUser)
                 throw new UserNotFoundException("Usuário não encontrado.");
 
-            return GenerateJwtToken(dbLogin, dbUser.Type.ToString());
+            var dbUserType = await _context.UserTypes.FirstOrDefaultAsync(us => us.UserTypeId == dbUser.UserTypeId);
+
+            if (null == dbUserType)
+                throw new UserNotFoundException("Tipo de Usuário não encontrado.");
+
+            return GenerateJwtToken(dbLogin, dbUserType.Name);
         }
 
 

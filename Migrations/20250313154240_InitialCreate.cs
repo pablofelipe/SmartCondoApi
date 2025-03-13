@@ -21,7 +21,8 @@ namespace SmartCondoApi.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: false),
                     TowerCount = table.Column<int>(type: "integer", nullable: false),
-                    Enabled = table.Column<bool>(type: "boolean", nullable: false)
+                    Enabled = table.Column<bool>(type: "boolean", nullable: false),
+                    MaxUsers = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -40,6 +41,20 @@ namespace SmartCondoApi.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ServiceTypes", x => x.ServiceTypeId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserTypes",
+                columns: table => new
+                {
+                    UserTypeId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTypes", x => x.UserTypeId);
                 });
 
             migrationBuilder.CreateTable(
@@ -109,7 +124,9 @@ namespace SmartCondoApi.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Phone1 = table.Column<string>(type: "text", nullable: false),
+                    Phone2 = table.Column<string>(type: "text", nullable: true),
+                    UserTypeId = table.Column<int>(type: "integer", nullable: false),
                     PersonalTaxID = table.Column<string>(type: "text", nullable: false),
                     CondominiumId = table.Column<int>(type: "integer", nullable: true),
                     TowerId = table.Column<int>(type: "integer", nullable: true),
@@ -130,6 +147,12 @@ namespace SmartCondoApi.Migrations
                         column: x => x.TowerId,
                         principalTable: "Towers",
                         principalColumn: "TowerId");
+                    table.ForeignKey(
+                        name: "FK_Users_UserTypes_UserTypeId",
+                        column: x => x.UserTypeId,
+                        principalTable: "UserTypes",
+                        principalColumn: "UserTypeId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -317,6 +340,11 @@ namespace SmartCondoApi.Migrations
                 column: "TowerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_UserTypeId",
+                table: "Users",
+                column: "UserTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Vehicles_LicensePlate",
                 table: "Vehicles",
                 column: "LicensePlate",
@@ -354,6 +382,9 @@ namespace SmartCondoApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Towers");
+
+            migrationBuilder.DropTable(
+                name: "UserTypes");
 
             migrationBuilder.DropTable(
                 name: "Condominiums");

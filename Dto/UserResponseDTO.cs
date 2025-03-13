@@ -1,6 +1,5 @@
 ﻿
 using SmartCondoApi.Dto;
-using SmartCondoApi.Models;
 
 namespace SmartCondoApi.dto
 {
@@ -9,8 +8,8 @@ namespace SmartCondoApi.dto
         public int UserId { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
-        public UserType Type { get; set; }
-        public string PersonalTaxID { get; set; }
+        public int UserTypeId { get; set; }
+        public string PersonalTaxId { get; set; }
         public int? CondominiumId { get; set; }
         public int? TowerId { get; set; }
         public int? FloorId { get; set; }

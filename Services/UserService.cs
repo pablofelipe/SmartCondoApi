@@ -14,7 +14,7 @@ namespace SmartCondoApi.Services
         public async Task<UserResponseDTO> AddUserAsync(UserCreateDTO userCreateDTO)
         {
             // Valida o CPF
-            if (!ValidateCPF(userCreateDTO.PersonalTaxID))
+            if (!ValidateCPF(userCreateDTO.PersonalTaxId))
             {
                 throw new InvalidPersonalTaxIDException("CPF inválido.");
             }
@@ -31,8 +31,8 @@ namespace SmartCondoApi.Services
             {
                 Name = userCreateDTO.Name,
                 Address = userCreateDTO.Address,
-                Type = (UserType)userCreateDTO.Type,
-                PersonalTaxID = userCreateDTO.PersonalTaxID,
+                UserTypeId = userCreateDTO.UserTypeId,
+                PersonalTaxID = userCreateDTO.PersonalTaxId,
                 CondominiumId = userCreateDTO.CondominiumId,
                 TowerId = userCreateDTO.TowerId,
                 FloorId = userCreateDTO.FloorId,
@@ -55,8 +55,8 @@ namespace SmartCondoApi.Services
             {
                 Name = userCreateDTO.Name,
                 Address = userCreateDTO.Address,
-                Type = (UserType)userCreateDTO.Type,
-                PersonalTaxID = userCreateDTO.PersonalTaxID,
+                UserTypeId = userCreateDTO.UserTypeId,
+                PersonalTaxId = userCreateDTO.PersonalTaxId,
                 CondominiumId = userCreateDTO.CondominiumId,
                 TowerId = userCreateDTO.TowerId,
                 FloorId = userCreateDTO.FloorId,
@@ -84,7 +84,7 @@ namespace SmartCondoApi.Services
 
             if (userUpdateDTO.Name != null) user.Name = userUpdateDTO.Name;
             if (userUpdateDTO.Address != null) user.Address = userUpdateDTO.Address;
-            if (userUpdateDTO.Type.HasValue) user.Type = (UserType)userUpdateDTO.Type.Value;
+
             if (userUpdateDTO.CondominiumId.HasValue) user.CondominiumId = userUpdateDTO.CondominiumId.Value;
             if (userUpdateDTO.TowerId.HasValue) user.TowerId = userUpdateDTO.TowerId.Value;
             if (userUpdateDTO.FloorId.HasValue) user.FloorId = userUpdateDTO.FloorId.Value;
@@ -105,8 +105,7 @@ namespace SmartCondoApi.Services
             {
                 Name = user.Name,
                 Address = user.Address,
-                Type = user.Type,
-                PersonalTaxID = user.PersonalTaxID,
+                PersonalTaxId = user.PersonalTaxID,
                 CondominiumId = user.CondominiumId,
                 TowerId = user.TowerId,
                 FloorId = user.FloorId,

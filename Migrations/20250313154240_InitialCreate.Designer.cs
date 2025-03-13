@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250312115202_InitialCreate")]
+    [Migration("20250313154240_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -39,6 +39,9 @@ namespace SmartCondoApi.Migrations
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("MaxUsers")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -284,10 +287,17 @@ namespace SmartCondoApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Phone1")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone2")
+                        .HasColumnType("text");
+
                     b.Property<int?>("TowerId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Type")
+                    b.Property<int>("UserTypeId")
                         .HasColumnType("integer");
 
                     b.HasKey("UserId");
@@ -299,7 +309,30 @@ namespace SmartCondoApi.Migrations
 
                     b.HasIndex("TowerId");
 
+                    b.HasIndex("UserTypeId");
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SmartCondoApi.Models.UserType", b =>
+                {
+                    b.Property<int>("UserTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserTypeId"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserTypeId");
+
+                    b.ToTable("UserTypes");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Vehicle", b =>
@@ -445,9 +478,17 @@ namespace SmartCondoApi.Migrations
                         .WithMany("Users")
                         .HasForeignKey("TowerId");
 
+                    b.HasOne("SmartCondoApi.Models.UserType", "UserType")
+                        .WithMany()
+                        .HasForeignKey("UserTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Condominium");
 
                     b.Navigation("Tower");
+
+                    b.Navigation("UserType");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Vehicle", b =>

@@ -1,15 +1,6 @@
-﻿
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace SmartCondoApi.Models;
-
-public enum UserType
-{
-    SysAdmin,
-    CondoAdmin,
-    ServiceProvider,
-    Resident
-}
 
 public class User
 {
@@ -23,8 +14,16 @@ public class User
     public int UserId { get; set; } // Chave primária
     public string Name { get; set; }
     public string Address { get; set; }
-    
-    public UserType Type { get; set; }
+
+    public string Phone1 { get; set; }
+
+    public string? Phone2 { get; set; }
+
+    // Chave estrangeira para UserType
+    public int UserTypeId { get; set; }
+
+    // Propriedade de navegação para UserType
+    public UserType UserType { get; set; }
     //CPF
     public string PersonalTaxID { get; set; }
 
