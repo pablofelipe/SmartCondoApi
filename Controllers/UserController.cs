@@ -15,7 +15,7 @@ namespace SmartCondoApi.Controllers
         // Adicionar um usuário
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AddUser([FromBody] UserCreateDTO userCreateDTO)
+        public async Task<ActionResult> AddUser([FromBody] UserCreateDTO userCreateDTO)
         {
             try
             {

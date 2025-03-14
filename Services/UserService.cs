@@ -60,6 +60,8 @@ namespace SmartCondoApi.Services
             {
                 Name = userCreateDTO.Name,
                 Address = userCreateDTO.Address,
+                Phone1 = userCreateDTO.Phone1,
+                Phone2 = userCreateDTO.Phone2,
                 UserTypeId = userCreateDTO.UserTypeId,
                 PersonalTaxID = userCreateDTO.PersonalTaxId,
                 CondominiumId = userCreateDTO.CondominiumId,
