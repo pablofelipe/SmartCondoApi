@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services;
 using System.Text;
@@ -70,6 +72,11 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 });
+
+builder.Host.UseSerilog((ctx, lc) => lc
+    .WriteTo.Console(LogEventLevel.Debug)
+    .WriteTo.File("logs/SmartCondoApi.log", rollingInterval: RollingInterval.Day)
+    );
 
 builder.Services.AddScoped(provider =>
 {

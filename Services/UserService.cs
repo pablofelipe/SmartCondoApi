@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Serilog;
 using SmartCondoApi.dto;
 using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
@@ -23,6 +24,34 @@ namespace SmartCondoApi.Services
             {
                 throw new ArgumentException("Nenhum login encontrado");
             }
+
+            var condo = await _context.Condominiums.FirstOrDefaultAsync(c => c.CondominiumId == userCreateDTO.CondominiumId);
+
+            if (null == condo)
+            {
+                throw new ArgumentException($"Condominio {userCreateDTO.CondominiumId} não encontrado");
+            }
+
+            if (!condo.Enabled)
+            {
+                throw new CondominiumDisabledException($"Condomínio {condo.Name} desabilitado. Entre em contato com o administrador para mais informações.");
+            }
+
+            var count = (from usr in context.Users
+                         join login in context.Logins on usr.UserId equals login.UserId
+                         where login.Enabled == true && usr.CondominiumId == userCreateDTO.CondominiumId
+                         select new
+                         {
+                             User = usr,
+                             Login = login
+                         }).Count();
+
+            if (count > condo.MaxUsers)
+            {
+                throw new UsersExceedException("O número máximo de usuários permitidos para este condomínio foi atingido. Entre em contato com o administrador para mais informações.");
+            }
+
+            await ResidentValidations(userCreateDTO, condo);
 
             // Encripta o password
             userCreateDTO.Login.Password = new SecurityHandler().EncryptText(userCreateDTO.Login.Password);
@@ -63,6 +92,64 @@ namespace SmartCondoApi.Services
                 Apartment = userCreateDTO.Apartment,
                 ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber
             };
+        }
+
+        private async Task ResidentValidations(UserCreateDTO userCreateDTO, Condominium condo)
+        {
+            var userTypes = await _context.UserTypes.FirstOrDefaultAsync(ut => ut.UserTypeId == userCreateDTO.UserTypeId);
+
+            if (null == userTypes)
+            {
+                throw new ArgumentException($"Tipo de usuário {userCreateDTO.UserTypeId} não encontrado");
+            }
+
+            if (userTypes.Name != "Resident")
+                return;
+
+            if (userCreateDTO.Apartment == 0)
+            {
+                throw new InconsistentDataException($"Número de apartamento incorreto.");
+            }
+
+            if (userCreateDTO.TowerId > condo.TowerCount)
+            {
+                throw new InconsistentDataException($"Número de torre incorreto. O condomínio {condo.Name} possui {condo.TowerCount} torres");
+            }
+
+            var tower = await _context.Towers.FirstOrDefaultAsync(t => t.TowerId == userCreateDTO.TowerId);
+
+            if (null == tower)
+            {
+                throw new ArgumentException($"Torre {userCreateDTO.TowerId} não encontrada");
+            }
+
+            if (userCreateDTO.FloorId > tower.FloorCount)
+            {
+                throw new InconsistentDataException($"Número de andar incorreto. A torre {tower.Name} possui {tower.FloorCount} andares");
+            }
+
+            //Regra para 1 apartamento por vaga.
+            var usersParkingSpaceNumber = (from usr in context.Users
+                         join login in context.Logins on usr.UserId equals login.UserId
+                         where login.Enabled == true 
+                         && usr.CondominiumId == userCreateDTO.CondominiumId
+                         && usr.ParkingSpaceNumber == userCreateDTO.ParkingSpaceNumber
+                         && usr.Apartment != userCreateDTO.Apartment
+                         select new
+                         {
+                             User = usr
+                         }).ToList();
+
+            if (null != usersParkingSpaceNumber && usersParkingSpaceNumber.Count > 0)
+            {
+                Log.Debug($"ParkingSpaceNumber no available trying to add new resident. Apartment: {userCreateDTO.Apartment}, ParkingSpaceNumber: {userCreateDTO.ParkingSpaceNumber}");
+                foreach (var item in usersParkingSpaceNumber)
+                {
+                    Log.Debug($"Apartment: {item.User.Apartment} of {item.User.Name} using the parkingspacenumber");
+                }
+
+                throw new InconsistentDataException($"Número de vaga especificada já está em uso para outro apartamento. Entre em contato com o administrador para mais informações.");
+            }
         }
 
         private static bool ValidateCPF(string personalTaxID)

@@ -17,8 +17,11 @@ namespace SmartCondoApi.Services
 
         public async Task<string> Login([FromBody] Dictionary<string, string> body)
         {
-            if (!body.TryGetValue("user", out string? user) || !body.TryGetValue("secret", out string? secret))
-                throw new InvalidCredentialsException("Email e senha são obrigatórios.");
+            if (!body.TryGetValue("user", out string user) || string.IsNullOrEmpty(user))
+                throw new InvalidCredentialsException("Email é obrigatório.");
+
+            if (!body.TryGetValue("secret", out string secret) || string.IsNullOrEmpty(secret))
+                throw new InvalidCredentialsException("Senha é obrigatória.");
 
             var dbLogin = await _context.Logins.FirstOrDefaultAsync(x => x.Email == user);
 

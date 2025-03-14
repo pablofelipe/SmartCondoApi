@@ -15,9 +15,6 @@ namespace SmartCondoApi.Models
             
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql("Name=ConnectionStrings:DefaultConnection");
-
         public DbSet<Login> Logins { get; set; }
 
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }

@@ -30,6 +30,10 @@ namespace SmartCondoApi.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            catch (UsersExceedException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Ocorreu um erro interno. Mensagem: {ex.Message}");
