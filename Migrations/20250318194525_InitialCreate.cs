@@ -63,6 +63,7 @@ namespace SmartCondoApi.Migrations
                 {
                     TowerId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Number = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     CondominiumId = table.Column<int>(type: "integer", nullable: false),
                     FloorCount = table.Column<int>(type: "integer", nullable: false)
@@ -129,6 +130,7 @@ namespace SmartCondoApi.Migrations
                     UserTypeId = table.Column<int>(type: "integer", nullable: false),
                     PersonalTaxID = table.Column<string>(type: "text", nullable: false),
                     CondominiumId = table.Column<int>(type: "integer", nullable: true),
+                    TowerNumber = table.Column<int>(type: "integer", nullable: true),
                     TowerId = table.Column<int>(type: "integer", nullable: true),
                     FloorId = table.Column<int>(type: "integer", nullable: true),
                     Apartment = table.Column<int>(type: "integer", nullable: true),
@@ -165,6 +167,7 @@ namespace SmartCondoApi.Migrations
                     Password = table.Column<string>(type: "text", nullable: false),
                     Expiration = table.Column<DateOnly>(type: "date", nullable: false),
                     Enabled = table.Column<bool>(type: "boolean", nullable: false),
+                    IsEmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>

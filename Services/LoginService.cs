@@ -28,6 +28,9 @@ namespace SmartCondoApi.Services
             if (null == dbLogin)
                 throw new UserNotFoundException("Login não encontrado.");
 
+            if (dbLogin.IsEmailConfirmed == false)
+                throw new UnconfirmedEmailException("O email não foi validado.");
+
             if (dbLogin.Enabled == false)
                 throw new UserDisabledException("Usuário desabilitado.");
 

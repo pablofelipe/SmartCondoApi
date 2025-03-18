@@ -28,6 +28,10 @@ namespace SmartCondoApi.Controllers
             {
                 return NotFound(new { ex.Message });
             }
+            catch (UnconfirmedEmailException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
             catch (UserDisabledException ex)
             {
                 return Unauthorized(new { ex.Message });

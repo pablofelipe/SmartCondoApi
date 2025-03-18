@@ -9,7 +9,7 @@ public class Login
     public string Password { get; set; }
     public DateOnly Expiration { get; set; }
     public bool Enabled { get; set; }
-
+    public bool IsEmailConfirmed { get; set; } = false;
     public int UserId { get; set; }
     [JsonIgnore]
     public User User { get; set; }

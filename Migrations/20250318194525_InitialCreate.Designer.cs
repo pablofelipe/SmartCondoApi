@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250313154240_InitialCreate")]
+    [Migration("20250318194525_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -72,6 +72,9 @@ namespace SmartCondoApi.Migrations
 
                     b.Property<DateOnly>("Expiration")
                         .HasColumnType("date");
+
+                    b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -248,6 +251,9 @@ namespace SmartCondoApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
                     b.HasKey("TowerId");
 
                     b.HasIndex("CondominiumId");
@@ -295,6 +301,9 @@ namespace SmartCondoApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<int?>("TowerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TowerNumber")
                         .HasColumnType("integer");
 
                     b.Property<int>("UserTypeId")

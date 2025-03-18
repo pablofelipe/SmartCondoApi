@@ -70,6 +70,9 @@ namespace SmartCondoApi.Migrations
                     b.Property<DateOnly>("Expiration")
                         .HasColumnType("date");
 
+                    b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
@@ -245,6 +248,9 @@ namespace SmartCondoApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
                     b.HasKey("TowerId");
 
                     b.HasIndex("CondominiumId");
@@ -292,6 +298,9 @@ namespace SmartCondoApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<int?>("TowerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TowerNumber")
                         .HasColumnType("integer");
 
                     b.Property<int>("UserTypeId")
