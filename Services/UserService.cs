@@ -5,6 +5,7 @@ using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
 using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
+using System;
 
 namespace SmartCondoApi.Services
 {
@@ -17,41 +18,44 @@ namespace SmartCondoApi.Services
             // Valida o CPF
             if (!ValidateCPF(userCreateDTO.PersonalTaxId))
             {
-                throw new InvalidPersonalTaxIDException("CPF inválido.");
+                throw new InvalidPersonalTaxIDException("CPF inválido");
             }
 
             if (null == userCreateDTO.Login)
             {
-                throw new ArgumentException("Nenhum login encontrado");
+                throw new InvalidCredentialsException("Nenhum login encontrado");
             }
 
             var condo = await _context.Condominiums.FirstOrDefaultAsync(c => c.CondominiumId == userCreateDTO.CondominiumId);
 
             if (null == condo)
             {
-                throw new ArgumentException($"Condominio {userCreateDTO.CondominiumId} não encontrado");
+                if (await SystemAdmin(userCreateDTO) == false)
+                    throw new ArgumentException($"Condominio {userCreateDTO.CondominiumId} não encontrado");
             }
-
-            if (!condo.Enabled)
+            else
             {
-                throw new CondominiumDisabledException($"Condomínio {condo.Name} desabilitado. Entre em contato com o administrador para mais informações.");
+                if (!condo.Enabled)
+                {
+                    throw new CondominiumDisabledException($"Condomínio {condo.Name} desabilitado. Entre em contato com o administrador para mais informações.");
+                }
+
+                var count = (from usr in context.Users
+                             join login in context.Logins on usr.UserId equals login.UserId
+                             where login.Enabled == true && usr.CondominiumId == userCreateDTO.CondominiumId
+                             select new
+                             {
+                                 User = usr,
+                                 Login = login
+                             }).Count();
+
+                if (count > condo.MaxUsers-1)
+                {
+                    throw new UsersExceedException("O número máximo de usuários permitidos para este condomínio foi atingido. Entre em contato com o administrador para mais informações.");
+                }
+
+                await ResidentValidations(userCreateDTO, condo);
             }
-
-            var count = (from usr in context.Users
-                         join login in context.Logins on usr.UserId equals login.UserId
-                         where login.Enabled == true && usr.CondominiumId == userCreateDTO.CondominiumId
-                         select new
-                         {
-                             User = usr,
-                             Login = login
-                         }).Count();
-
-            if (count > condo.MaxUsers)
-            {
-                throw new UsersExceedException("O número máximo de usuários permitidos para este condomínio foi atingido. Entre em contato com o administrador para mais informações.");
-            }
-
-            await ResidentValidations(userCreateDTO, condo);
 
             // Encripta o password
             userCreateDTO.Login.Password = new SecurityHandler().EncryptText(userCreateDTO.Login.Password);
@@ -65,7 +69,7 @@ namespace SmartCondoApi.Services
                 UserTypeId = userCreateDTO.UserTypeId,
                 PersonalTaxID = userCreateDTO.PersonalTaxId,
                 CondominiumId = userCreateDTO.CondominiumId,
-                TowerId = userCreateDTO.TowerId,
+                TowerNumber = userCreateDTO.TowerNumber,
                 FloorId = userCreateDTO.FloorId,
                 Apartment = userCreateDTO.Apartment,
                 ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber,
@@ -89,11 +93,23 @@ namespace SmartCondoApi.Services
                 UserTypeId = userCreateDTO.UserTypeId,
                 PersonalTaxId = userCreateDTO.PersonalTaxId,
                 CondominiumId = userCreateDTO.CondominiumId,
-                TowerId = userCreateDTO.TowerId,
+                TowerNumber = userCreateDTO.TowerNumber,
                 FloorId = userCreateDTO.FloorId,
                 Apartment = userCreateDTO.Apartment,
                 ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber
             };
+        }
+
+        private async Task<bool> SystemAdmin(UserCreateDTO userCreateDTO)
+        {
+            var userTypes = await _context.UserTypes.FirstOrDefaultAsync(ut => ut.UserTypeId == userCreateDTO.UserTypeId);
+
+            if (null == userTypes)
+            {
+                throw new ArgumentException($"Tipo de usuário {userCreateDTO.UserTypeId} não encontrado");
+            }
+
+            return string.Compare(userTypes.Name, "SystemAdministrator", StringComparison.OrdinalIgnoreCase) == 0;
         }
 
         private async Task ResidentValidations(UserCreateDTO userCreateDTO, Condominium condo)
@@ -105,7 +121,7 @@ namespace SmartCondoApi.Services
                 throw new ArgumentException($"Tipo de usuário {userCreateDTO.UserTypeId} não encontrado");
             }
 
-            if (userTypes.Name != "Resident")
+            if (string.Compare(userTypes.Name, "Resident", StringComparison.OrdinalIgnoreCase) != 0)
                 return;
 
             if (userCreateDTO.Apartment == 0)
@@ -113,21 +129,16 @@ namespace SmartCondoApi.Services
                 throw new InconsistentDataException($"Número de apartamento incorreto.");
             }
 
-            if (userCreateDTO.TowerId > condo.TowerCount)
-            {
-                throw new InconsistentDataException($"Número de torre incorreto. O condomínio {condo.Name} possui {condo.TowerCount} torres");
-            }
-
-            var tower = await _context.Towers.FirstOrDefaultAsync(t => t.TowerId == userCreateDTO.TowerId);
+            var tower = await _context.Towers.FirstOrDefaultAsync(t => t.Number == userCreateDTO.TowerNumber && t.CondominiumId == condo.CondominiumId);
 
             if (null == tower)
             {
-                throw new ArgumentException($"Torre {userCreateDTO.TowerId} não encontrada");
+                throw new ArgumentException($"Torre {userCreateDTO.TowerNumber} não encontrada");
             }
 
             if (userCreateDTO.FloorId > tower.FloorCount)
             {
-                throw new InconsistentDataException($"Número de andar incorreto. A torre {tower.Name} possui {tower.FloorCount} andares");
+                throw new InconsistentDataException($"Número de andar incorreto. A torre {tower.Name} possui {tower.FloorCount} andar(es)");
             }
 
             //Regra para 1 apartamento por vaga.
@@ -150,7 +161,7 @@ namespace SmartCondoApi.Services
                     Log.Debug($"Apartment: {item.User.Apartment} of {item.User.Name} using the parkingspacenumber");
                 }
 
-                throw new InconsistentDataException($"Número de vaga especificada já está em uso para outro apartamento. Entre em contato com o administrador para mais informações.");
+                throw new ParkingSpaceNumberException($"Número de vaga especificada já está em uso para outro apartamento. Entre em contato com o administrador para mais informações.");
             }
         }
 
@@ -175,7 +186,7 @@ namespace SmartCondoApi.Services
             if (userUpdateDTO.Address != null) user.Address = userUpdateDTO.Address;
 
             if (userUpdateDTO.CondominiumId.HasValue) user.CondominiumId = userUpdateDTO.CondominiumId.Value;
-            if (userUpdateDTO.TowerId.HasValue) user.TowerId = userUpdateDTO.TowerId.Value;
+            if (userUpdateDTO.TowerNumber.HasValue) user.TowerNumber = userUpdateDTO.TowerNumber.Value;
             if (userUpdateDTO.FloorId.HasValue) user.FloorId = userUpdateDTO.FloorId.Value;
             if (userUpdateDTO.Apartment.HasValue) user.Apartment = userUpdateDTO.Apartment.Value;
 
@@ -196,7 +207,7 @@ namespace SmartCondoApi.Services
                 Address = user.Address,
                 PersonalTaxId = user.PersonalTaxID,
                 CondominiumId = user.CondominiumId,
-                TowerId = user.TowerId,
+                TowerNumber = user.TowerNumber,
                 FloorId = user.FloorId,
                 Apartment = user.Apartment
             };

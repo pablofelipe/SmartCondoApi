@@ -22,7 +22,15 @@ namespace SmartCondoApi.Controllers
                 var userResponseDTO = await _userService.AddUserAsync(userCreateDTO);
                 return Ok(userResponseDTO);
             }
+            catch (InvalidPersonalTaxIDException ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
             catch (InvalidCredentialsException ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
+            catch (InconsistentDataException ex)
             {
                 return BadRequest(new { ex.Message });
             }
@@ -30,7 +38,15 @@ namespace SmartCondoApi.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            catch (CondominiumDisabledException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
             catch (UsersExceedException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (ParkingSpaceNumberException ex)
             {
                 return Unauthorized(new { ex.Message });
             }

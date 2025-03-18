@@ -34,7 +34,8 @@ public class User
     [JsonIgnore]
     public Condominium? Condominium { get; set; }
 
-    public int? TowerId { get; set; }
+    public int? TowerNumber { get; set; }
+
     [JsonIgnore]
     public Tower? Tower { get; set; }
 
