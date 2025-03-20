@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
+using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services;
 using System.Text;
@@ -78,17 +81,11 @@ builder.Host.UseSerilog((ctx, lc) => lc
     .WriteTo.File("logs/SmartCondoApi.log", rollingInterval: RollingInterval.Day)
     );
 
-builder.Services.AddScoped(provider =>
-{
-    var dbContext = provider.GetRequiredService<SmartCondoContext>();
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    return new LoginService(dbContext, configuration);
-});
 
-builder.Services.AddScoped(provider =>
-{
-    var dbContext = provider.GetRequiredService<SmartCondoContext>();
-    return new UserService(dbContext);
+
+builder.Services.AddScoped<IEmailService>(email => {
+    var configuration = email.GetRequiredService<IConfiguration>();
+    return new EmailService(configuration);
 });
 
 builder.Services.AddCors(options =>
@@ -102,11 +99,48 @@ builder.Services.AddCors(options =>
         });
 });
 
+
 builder.Services.AddScoped<IForgotPasswordService>(provider =>
 {
     var dbContext = provider.GetRequiredService<SmartCondoContext>();
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    return new ForgotPasswordService(dbContext, configuration);
+    var email = provider.GetRequiredService<IEmailService>();
+    return new ForgotPasswordService(dbContext, email);
+});
+
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("SmartCondoApi");
+
+builder.Services.AddIdentity<User, IdentityRole<long>>(options => {
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+})
+    .AddEntityFrameworkStores<SmartCondoContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IUserDependencies, UserDependencies>();
+builder.Services.AddScoped(provider =>
+{
+    var userDependencies = provider.GetRequiredService<IUserDependencies>();
+
+    return new UserService(userDependencies);
+});
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<IUserProfileDependencies, UserProfileDependencies>();
+builder.Services.AddScoped(provider =>
+{
+    var userProfileDependencies = provider.GetRequiredService<IUserProfileDependencies>();
+
+    return new UserProfileService(userProfileDependencies);
 });
 
 builder.Services.AddControllers()
@@ -118,6 +152,8 @@ builder.Services.AddControllers()
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+var urls = app.Urls;
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

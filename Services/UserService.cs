@@ -1,216 +1,100 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Serilog;
-using SmartCondoApi.dto;
-using SmartCondoApi.Dto;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SmartCondoApi.Exceptions;
-using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
-using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace SmartCondoApi.Services
 {
-    public class UserService(SmartCondoContext context)
+    public class UserService(IUserDependencies dependencies)
     {
-        private readonly SmartCondoContext _context = context;
+        private readonly IUserDependencies _dependencies = dependencies;
 
-        public async Task<UserResponseDTO> AddUserAsync(UserCreateDTO userCreateDTO)
+        public async Task<string> Login([FromBody] Dictionary<string, string> body)
         {
-            // Valida o CPF
-            if (!ValidateCPF(userCreateDTO.PersonalTaxId))
+            if (!body.TryGetValue("user", out string userText) || string.IsNullOrEmpty(userText))
             {
-                throw new InvalidPersonalTaxIDException("CPF inválido");
+                throw new InvalidCredentialsException("Email é obrigatório.");
             }
 
-            if (null == userCreateDTO.Login)
+            if (!body.TryGetValue("secret", out string secretText) || string.IsNullOrEmpty(secretText))
             {
-                throw new InvalidCredentialsException("Nenhum login encontrado");
+                throw new InvalidCredentialsException("Senha é obrigatória.");
             }
 
-            var condo = await _context.Condominiums.FirstOrDefaultAsync(c => c.CondominiumId == userCreateDTO.CondominiumId);
-
-            if (null == condo)
-            {
-                if (await SystemAdmin(userCreateDTO) == false)
-                    throw new ArgumentException($"Condominio {userCreateDTO.CondominiumId} não encontrado");
-            }
-            else
-            {
-                if (!condo.Enabled)
-                {
-                    throw new CondominiumDisabledException($"Condomínio {condo.Name} desabilitado. Entre em contato com o administrador para mais informações.");
-                }
-
-                var count = (from usr in context.Users
-                             join login in context.Logins on usr.UserId equals login.UserId
-                             where login.Enabled == true && usr.CondominiumId == userCreateDTO.CondominiumId
-                             select new
-                             {
-                                 User = usr,
-                                 Login = login
-                             }).Count();
-
-                if (count > condo.MaxUsers-1)
-                {
-                    throw new UsersExceedException("O número máximo de usuários permitidos para este condomínio foi atingido. Entre em contato com o administrador para mais informações.");
-                }
-
-                await ResidentValidations(userCreateDTO, condo);
-            }
-
-            // Encripta o password
-            userCreateDTO.Login.Password = new SecurityHandler().EncryptText(userCreateDTO.Login.Password);
-
-            var user = new User
-            {
-                Name = userCreateDTO.Name,
-                Address = userCreateDTO.Address,
-                Phone1 = userCreateDTO.Phone1,
-                Phone2 = userCreateDTO.Phone2,
-                UserTypeId = userCreateDTO.UserTypeId,
-                PersonalTaxID = userCreateDTO.PersonalTaxId,
-                CondominiumId = userCreateDTO.CondominiumId,
-                TowerNumber = userCreateDTO.TowerNumber,
-                FloorId = userCreateDTO.FloorId,
-                Apartment = userCreateDTO.Apartment,
-                ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber,
-                Login = new Login
-                {
-                    Email = userCreateDTO.Login.Email,
-                    Password = userCreateDTO.Login.Password,
-                    Expiration = userCreateDTO.Login.Expiration,
-                    Enabled = userCreateDTO.Login.Enabled
-                }
-            };
-
-            // Adiciona o usuário ao banco de dados
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-
-            return new UserResponseDTO()
-            {
-                Name = userCreateDTO.Name,
-                Address = userCreateDTO.Address,
-                UserTypeId = userCreateDTO.UserTypeId,
-                PersonalTaxId = userCreateDTO.PersonalTaxId,
-                CondominiumId = userCreateDTO.CondominiumId,
-                TowerNumber = userCreateDTO.TowerNumber,
-                FloorId = userCreateDTO.FloorId,
-                Apartment = userCreateDTO.Apartment,
-                ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber
-            };
-        }
-
-        private async Task<bool> SystemAdmin(UserCreateDTO userCreateDTO)
-        {
-            var userTypes = await _context.UserTypes.FirstOrDefaultAsync(ut => ut.UserTypeId == userCreateDTO.UserTypeId);
-
-            if (null == userTypes)
-            {
-                throw new ArgumentException($"Tipo de usuário {userCreateDTO.UserTypeId} não encontrado");
-            }
-
-            return string.Compare(userTypes.Name, "SystemAdministrator", StringComparison.OrdinalIgnoreCase) == 0;
-        }
-
-        private async Task ResidentValidations(UserCreateDTO userCreateDTO, Condominium condo)
-        {
-            var userTypes = await _context.UserTypes.FirstOrDefaultAsync(ut => ut.UserTypeId == userCreateDTO.UserTypeId);
-
-            if (null == userTypes)
-            {
-                throw new ArgumentException($"Tipo de usuário {userCreateDTO.UserTypeId} não encontrado");
-            }
-
-            if (string.Compare(userTypes.Name, "Resident", StringComparison.OrdinalIgnoreCase) != 0)
-                return;
-
-            if (userCreateDTO.Apartment == 0)
-            {
-                throw new InconsistentDataException($"Número de apartamento incorreto.");
-            }
-
-            var tower = await _context.Towers.FirstOrDefaultAsync(t => t.Number == userCreateDTO.TowerNumber && t.CondominiumId == condo.CondominiumId);
-
-            if (null == tower)
-            {
-                throw new ArgumentException($"Torre {userCreateDTO.TowerNumber} não encontrada");
-            }
-
-            if (userCreateDTO.FloorId > tower.FloorCount)
-            {
-                throw new InconsistentDataException($"Número de andar incorreto. A torre {tower.Name} possui {tower.FloorCount} andar(es)");
-            }
-
-            //Regra para 1 apartamento por vaga.
-            var usersParkingSpaceNumber = (from usr in context.Users
-                         join login in context.Logins on usr.UserId equals login.UserId
-                         where login.Enabled == true 
-                         && usr.CondominiumId == userCreateDTO.CondominiumId
-                         && usr.ParkingSpaceNumber == userCreateDTO.ParkingSpaceNumber
-                         && usr.Apartment != userCreateDTO.Apartment
-                         select new
-                         {
-                             User = usr
-                         }).ToList();
-
-            if (null != usersParkingSpaceNumber && usersParkingSpaceNumber.Count > 0)
-            {
-                Log.Debug($"ParkingSpaceNumber no available trying to add new resident. Apartment: {userCreateDTO.Apartment}, ParkingSpaceNumber: {userCreateDTO.ParkingSpaceNumber}");
-                foreach (var item in usersParkingSpaceNumber)
-                {
-                    Log.Debug($"Apartment: {item.User.Apartment} of {item.User.Name} using the parkingspacenumber");
-                }
-
-                throw new ParkingSpaceNumberException($"Número de vaga especificada já está em uso para outro apartamento. Entre em contato com o administrador para mais informações.");
-            }
-        }
-
-        private static bool ValidateCPF(string personalTaxID)
-        {
-            return new IndividualTaxpayerRegistryHandler().Verify(personalTaxID);
-        }
-
-        public async Task<UserResponseDTO> UpdateUserAsync(long userId, UserUpdateDTO userUpdateDTO)
-        {
-            if (null == userUpdateDTO)
-                throw new InvalidCredentialsException("Dados de usuario são obrigatórios.");
-
-            // Busca o usuário existente no banco de dados
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.UserId == userId);
+            var user = await _dependencies.UserManager.FindByEmailAsync(userText);
 
             if (null == user)
-                throw new UserNotFoundException("Usuário não encontrado.");
-
-            if (userUpdateDTO.Name != null) user.Name = userUpdateDTO.Name;
-            if (userUpdateDTO.Address != null) user.Address = userUpdateDTO.Address;
-
-            if (userUpdateDTO.CondominiumId.HasValue) user.CondominiumId = userUpdateDTO.CondominiumId.Value;
-            if (userUpdateDTO.TowerNumber.HasValue) user.TowerNumber = userUpdateDTO.TowerNumber.Value;
-            if (userUpdateDTO.FloorId.HasValue) user.FloorId = userUpdateDTO.FloorId.Value;
-            if (userUpdateDTO.Apartment.HasValue) user.Apartment = userUpdateDTO.Apartment.Value;
-
-            // Atualiza os dados do Login, se fornecido
-            if (userUpdateDTO.Login != null && user.Login != null)
             {
-                if (userUpdateDTO.Login.Email != null) user.Login.Email = userUpdateDTO.Login.Email;
-                if (userUpdateDTO.Login.Password != null) user.Login.Password = userUpdateDTO.Login.Password;
-                if (userUpdateDTO.Login.Expiration.HasValue) user.Login.Expiration = userUpdateDTO.Login.Expiration.Value;
-                if (userUpdateDTO.Login.Enabled.HasValue) user.Login.Enabled = userUpdateDTO.Login.Enabled.Value;
+                throw new UserNotFoundException("Usuário não encontrado.");
             }
 
-            await _context.SaveChangesAsync();
-
-            return new UserResponseDTO()
+            if (user.EmailConfirmed == false)
             {
-                Name = user.Name,
-                Address = user.Address,
-                PersonalTaxId = user.PersonalTaxID,
-                CondominiumId = user.CondominiumId,
-                TowerNumber = user.TowerNumber,
-                FloorId = user.FloorId,
-                Apartment = user.Apartment
+                throw new UnconfirmedEmailException("O email não foi validado.");
+            }
+
+            if (user.Enabled == false)
+            {
+                throw new UserDisabledException("Usuário desabilitado.");
+            }
+
+            if (await _dependencies.UserManager.IsLockedOutAsync(user))
+            {
+                throw new UserLockedException("Conta bloqueada. Tente novamente mais tarde.");
+            }
+
+            //throw new UserExpiredException("Usuário expirado.");
+
+            if (!await _dependencies.UserManager.CheckPasswordAsync(user, secretText))
+            {
+                throw new IncorrectPasswordException("Senha incorreta.");
+            }
+
+            var userProfile = await _dependencies.Context.UserProfiles.FirstOrDefaultAsync(x => x.Id == user.Id);
+
+            if (null == userProfile)
+            {
+                throw new UserNotFoundException("Perfil de usuário não encontrado.");
+            }
+
+            var dbUserType = await _dependencies.Context.UserTypes.FirstOrDefaultAsync(us => us.Id == userProfile.UserTypeId);
+
+            if (null == dbUserType)
+            {
+                throw new UserTypeNotFoundException("Tipo de Usuário não encontrado.");
+            }
+
+            return GenerateJwtToken(user, dbUserType.Name);
+        }
+
+
+        private string GenerateJwtToken(User user, string userType)
+        {
+            var configuration = _dependencies.Configuration;
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(ClaimTypes.Role, userType) // Exemplo de role
             };
+
+            var token = new JwtSecurityToken(
+                issuer: configuration["Jwt:Issuer"],
+                audience: configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(1), // Tempo de expiração do token
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

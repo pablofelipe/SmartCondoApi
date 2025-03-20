@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250318194525_InitialCreate")]
+    [Migration("20250320153513_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,13 +25,145 @@ namespace SmartCondoApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SmartCondoApi.Models.Condominium", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<long>", b =>
                 {
-                    b.Property<int>("CondominiumId")
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
+                {
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CondominiumId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+
+                    b.Property<long>("RoleId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<long>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<long>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<long>", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RoleId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<long>", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCondoApi.Models.Condominium", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -50,57 +182,18 @@ namespace SmartCondoApi.Migrations
                     b.Property<int>("TowerCount")
                         .HasColumnType("integer");
 
-                    b.HasKey("CondominiumId");
+                    b.HasKey("Id");
 
                     b.ToTable("Condominiums");
                 });
 
-            modelBuilder.Entity("SmartCondoApi.Models.Login", b =>
-                {
-                    b.Property<int>("LoginId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LoginId"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Enabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateOnly>("Expiration")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsEmailConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("LoginId");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Logins");
-                });
-
             modelBuilder.Entity("SmartCondoApi.Models.Message", b =>
                 {
-                    b.Property<int>("MessageId")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MessageId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("CondominiumId")
                         .HasColumnType("integer");
@@ -112,11 +205,11 @@ namespace SmartCondoApi.Migrations
                     b.Property<int?>("FloorId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("RecipientId")
-                        .HasColumnType("integer");
+                    b.Property<long?>("RecipientId")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("SenderId")
-                        .HasColumnType("integer");
+                    b.Property<long>("SenderId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("SentDate")
                         .HasColumnType("timestamp with time zone");
@@ -124,7 +217,7 @@ namespace SmartCondoApi.Migrations
                     b.Property<int?>("TowerId")
                         .HasColumnType("integer");
 
-                    b.HasKey("MessageId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CondominiumId");
 
@@ -148,27 +241,27 @@ namespace SmartCondoApi.Migrations
                     b.Property<DateTime>("Expires")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("LoginId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("LoginId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("PasswordResetTokens");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Service", b =>
                 {
-                    b.Property<int>("ServiceId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ServiceId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CondominiumId")
                         .HasColumnType("integer");
@@ -201,7 +294,7 @@ namespace SmartCondoApi.Migrations
                     b.Property<int?>("TowerId")
                         .HasColumnType("integer");
 
-                    b.HasKey("ServiceId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CondominiumId");
 
@@ -214,11 +307,11 @@ namespace SmartCondoApi.Migrations
 
             modelBuilder.Entity("SmartCondoApi.Models.ServiceType", b =>
                 {
-                    b.Property<int>("ServiceTypeId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ServiceTypeId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -228,18 +321,18 @@ namespace SmartCondoApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("ServiceTypeId");
+                    b.HasKey("Id");
 
                     b.ToTable("ServiceTypes");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Tower", b =>
                 {
-                    b.Property<int>("TowerId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TowerId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CondominiumId")
                         .HasColumnType("integer");
@@ -254,7 +347,7 @@ namespace SmartCondoApi.Migrations
                     b.Property<int>("Number")
                         .HasColumnType("integer");
 
-                    b.HasKey("TowerId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CondominiumId");
 
@@ -263,11 +356,81 @@ namespace SmartCondoApi.Migrations
 
             modelBuilder.Entity("SmartCondoApi.Models.User", b =>
                 {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCondoApi.Models.UserProfile", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -309,7 +472,7 @@ namespace SmartCondoApi.Migrations
                     b.Property<int>("UserTypeId")
                         .HasColumnType("integer");
 
-                    b.HasKey("UserId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CondominiumId");
 
@@ -320,16 +483,16 @@ namespace SmartCondoApi.Migrations
 
                     b.HasIndex("UserTypeId");
 
-                    b.ToTable("Users");
+                    b.ToTable("UserProfiles");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.UserType", b =>
                 {
-                    b.Property<int>("UserTypeId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserTypeId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -339,18 +502,18 @@ namespace SmartCondoApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("UserTypeId");
+                    b.HasKey("Id");
 
                     b.ToTable("UserTypes");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Vehicle", b =>
                 {
-                    b.Property<int>("VehicleId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("VehicleId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Brand")
                         .IsRequired()
@@ -374,10 +537,10 @@ namespace SmartCondoApi.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
 
-                    b.HasKey("VehicleId");
+                    b.HasKey("Id");
 
                     b.HasIndex("LicensePlate")
                         .IsUnique();
@@ -387,15 +550,55 @@ namespace SmartCondoApi.Migrations
                     b.ToTable("Vehicles");
                 });
 
-            modelBuilder.Entity("SmartCondoApi.Models.Login", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
                 {
-                    b.HasOne("SmartCondoApi.Models.User", "User")
-                        .WithOne("Login")
-                        .HasForeignKey("SmartCondoApi.Models.Login", "UserId")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<long>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<long>", b =>
+                {
+                    b.HasOne("SmartCondoApi.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<long>", b =>
+                {
+                    b.HasOne("SmartCondoApi.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<long>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<long>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.HasOne("SmartCondoApi.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<long>", b =>
+                {
+                    b.HasOne("SmartCondoApi.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Message", b =>
@@ -406,12 +609,12 @@ namespace SmartCondoApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SmartCondoApi.Models.User", "RecipientUser")
+                    b.HasOne("SmartCondoApi.Models.UserProfile", "RecipientUser")
                         .WithMany("ReceivedMessages")
                         .HasForeignKey("RecipientId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("SmartCondoApi.Models.User", "SenderUser")
+                    b.HasOne("SmartCondoApi.Models.UserProfile", "SenderUser")
                         .WithMany("SentMessages")
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -432,13 +635,13 @@ namespace SmartCondoApi.Migrations
 
             modelBuilder.Entity("SmartCondoApi.Models.PasswordResetToken", b =>
                 {
-                    b.HasOne("SmartCondoApi.Models.Login", "Login")
-                        .WithMany("PasswordResetTokens")
-                        .HasForeignKey("LoginId")
+                    b.HasOne("SmartCondoApi.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Login");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Service", b =>
@@ -479,6 +682,17 @@ namespace SmartCondoApi.Migrations
 
             modelBuilder.Entity("SmartCondoApi.Models.User", b =>
                 {
+                    b.HasOne("SmartCondoApi.Models.UserProfile", "UserProfile")
+                        .WithOne("User")
+                        .HasForeignKey("SmartCondoApi.Models.User", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserProfile");
+                });
+
+            modelBuilder.Entity("SmartCondoApi.Models.UserProfile", b =>
+                {
                     b.HasOne("SmartCondoApi.Models.Condominium", "Condominium")
                         .WithMany("Users")
                         .HasForeignKey("CondominiumId");
@@ -502,7 +716,7 @@ namespace SmartCondoApi.Migrations
 
             modelBuilder.Entity("SmartCondoApi.Models.Vehicle", b =>
                 {
-                    b.HasOne("SmartCondoApi.Models.User", "User")
+                    b.HasOne("SmartCondoApi.Models.UserProfile", "User")
                         .WithMany("Vehicles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -522,11 +736,6 @@ namespace SmartCondoApi.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("SmartCondoApi.Models.Login", b =>
-                {
-                    b.Navigation("PasswordResetTokens");
-                });
-
             modelBuilder.Entity("SmartCondoApi.Models.ServiceType", b =>
                 {
                     b.Navigation("Services");
@@ -541,13 +750,13 @@ namespace SmartCondoApi.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("SmartCondoApi.Models.User", b =>
+            modelBuilder.Entity("SmartCondoApi.Models.UserProfile", b =>
                 {
-                    b.Navigation("Login");
-
                     b.Navigation("ReceivedMessages");
 
                     b.Navigation("SentMessages");
+
+                    b.Navigation("User");
 
                     b.Navigation("Vehicles");
                 });

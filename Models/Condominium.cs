@@ -2,7 +2,7 @@
 {
     public class Condominium
     {
-        public int CondominiumId { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
         public int TowerCount { get; set; }
@@ -11,7 +11,7 @@
 
         public ICollection<Tower> Towers { get; set; }
 
-        public ICollection<User> Users { get; set; }
+        public ICollection<UserProfile> Users { get; set; }
 
         public ICollection<Service> Services { get; set; }
 

@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace SmartCondoApi.Models
 {
-    public class SmartCondoContext : DbContext
+    public class SmartCondoContext : IdentityDbContext<User, IdentityRole<long>, long>
     {
         public SmartCondoContext()
         {
@@ -12,16 +14,14 @@ namespace SmartCondoApi.Models
         public SmartCondoContext(DbContextOptions<SmartCondoContext> options)
             : base(options)
         {
-            
-        }
 
-        public DbSet<Login> Logins { get; set; }
+        }
 
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
         public DbSet<UserType> UserTypes { get; set; }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
 
         public DbSet<ServiceType> ServiceTypes { get; set; }
 
@@ -37,58 +37,58 @@ namespace SmartCondoApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.Login)
-                .WithOne(l => l.User)
-                .HasForeignKey<Login>(l => l.UserId);
+            modelBuilder.Entity<UserProfile>()
+                .HasOne(u => u.User)
+                .WithOne(l => l.UserProfile)
+                .HasForeignKey<User>(l => l.Id);
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserProfile>()
                 .HasIndex(c => c.PersonalTaxID)
                 .IsUnique();
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserProfile>()
                 .HasOne(u => u.UserType)
                 .WithMany()
                 .HasForeignKey(u => u.UserTypeId)
                 .IsRequired();
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserProfile>()
                 .HasOne(e => e.Condominium)
                 .WithMany(e => e.Users)
                 .IsRequired(false);
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserProfile>()
                 .HasOne(e => e.Tower)
                 .WithMany(e => e.Users)
                 .IsRequired(false);
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserProfile>()
                 .HasMany(u => u.Vehicles)
                 .WithOne(c => c.User)
                 .HasForeignKey(c => c.UserId)
                 .IsRequired();
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserProfile>()
                 .HasMany(u => u.SentMessages)
                 .WithOne(m => m.SenderUser)
                 .HasForeignKey(m => m.SenderId)
                 .OnDelete(DeleteBehavior.Restrict); // Evita exclusão em cascata
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserProfile>()
                 .HasMany(u => u.ReceivedMessages)
                 .WithOne(m => m.RecipientUser)
                 .HasForeignKey(m => m.RecipientId)
                 .OnDelete(DeleteBehavior.Restrict); // Evita exclusão em cascata
 
-            modelBuilder.Entity<Login>()
+            modelBuilder.Entity<User>()
                 .HasIndex(c => c.Email)
                 .IsUnique();
 
-            modelBuilder.Entity<PasswordResetToken>()
-                .HasOne(prt => prt.Login) 
-                .WithMany(l => l.PasswordResetTokens)
-                .HasForeignKey(prt => prt.LoginId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<PasswordResetToken>()
+            //    .HasOne(prt => prt.User) 
+            //    .WithMany(l => l.PasswordResetTokens)
+            //    .HasForeignKey(prt => prt.LoginId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Condominium>()
                 .HasMany(c => c.Users)
@@ -108,7 +108,7 @@ namespace SmartCondoApi.Models
 
 
             modelBuilder.Entity<Vehicle>()
-                .Property(u => u.VehicleId)
+                .Property(u => u.Id)
                 .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Vehicle>()

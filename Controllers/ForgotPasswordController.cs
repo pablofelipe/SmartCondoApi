@@ -9,7 +9,7 @@ namespace SmartCondoApi.Controllers
     public class ForgotPasswordController(IForgotPasswordService _forgotPasswordService) : ControllerBase
     {
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+        public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
         {
             try
             {
@@ -23,7 +23,7 @@ namespace SmartCondoApi.Controllers
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
+        public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
         {
             try
             {

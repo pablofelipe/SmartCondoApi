@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public string Token { get; set; }
         public DateTime Expires { get; set; }
-        public int LoginId { get; set; }
-        public Login Login { get; set; }
+        public long UserId { get; set; }
+        public User User { get; set; }
     }
 }

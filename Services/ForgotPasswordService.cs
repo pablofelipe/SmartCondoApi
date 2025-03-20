@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCondoApi.Dto;
 using SmartCondoApi.Models;
-using System.Net.Mail;
 using System.Security.Cryptography;
 
 
@@ -12,11 +11,11 @@ namespace SmartCondoApi.Services
         Task<ForgotPasswordResponseDto> SendResetLinkAsync(ForgotPasswordRequestDto request);
         Task<ResetPasswordResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request);
     }
-    public class ForgotPasswordService(SmartCondoContext _context, IConfiguration _configuration) : IForgotPasswordService
+    public class ForgotPasswordService(SmartCondoContext _context, IEmailService _emailService) : IForgotPasswordService
     {
         public async Task<ForgotPasswordResponseDto> SendResetLinkAsync(ForgotPasswordRequestDto request)
         {
-            var login = await _context.Logins.FirstOrDefaultAsync(l => l.Email == request.Email);
+            var login = await _context.Users.FirstOrDefaultAsync(l => l.Email == request.Email);
             if (login == null)
             {
                 throw new ArgumentException("Usuário não encontrado.");
@@ -30,7 +29,7 @@ namespace SmartCondoApi.Services
             {
                 Token = token,
                 Expires = DateTime.UtcNow.AddHours(1), // 1 hora de expiração
-                LoginId = login.LoginId
+                UserId = login.Id
             };
 
             _context.PasswordResetTokens.Add(passwordResetToken);
@@ -46,7 +45,7 @@ namespace SmartCondoApi.Services
         public async Task<ResetPasswordResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request)
         {
             var passwordResetToken = await _context.PasswordResetTokens
-                .Include(prt => prt.Login) // Carrega o Login relacionado
+                .Include(prt => prt.User) // Carrega o Login relacionado
                 .FirstOrDefaultAsync(prt =>
                     prt.Token == request.Token &&
                     prt.Expires > DateTime.UtcNow);
@@ -57,7 +56,7 @@ namespace SmartCondoApi.Services
             }
 
             // Atualiza a senha do Login
-            passwordResetToken.Login.Password = HashPassword(request.Password);
+            passwordResetToken.User.PasswordHash = HashPassword(request.Password);
 
             // Remove o token de reset (já foi usado)
             _context.PasswordResetTokens.Remove(passwordResetToken);
@@ -80,25 +79,7 @@ namespace SmartCondoApi.Services
 
         private async Task SendEmailAsync(string to, string subject, string body)
         {
-            var emailSettings = _configuration.GetSection("EmailSettings");
-            var fromEmail = emailSettings["FromEmail"];
-            var fromPassword = emailSettings["FromPassword"];
-
-            using var client = new SmtpClient(emailSettings["SmtpServer"], int.Parse(emailSettings["SmtpPort"]))
-            {
-                Credentials = new System.Net.NetworkCredential(fromEmail, fromPassword),
-                EnableSsl = bool.Parse(emailSettings["EnableSsl"]),
-            };
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(fromEmail),
-                To = { to },
-                Subject = subject,
-                Body = body,
-            };
-
-            await client.SendMailAsync(mailMessage);
+            await _emailService.SendEmailAsync(to, subject, body);
         }
 
         private string HashPassword(string password)

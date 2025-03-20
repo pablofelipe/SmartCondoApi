@@ -2,7 +2,7 @@
 {
     public partial class Tower
     {
-        public int TowerId { get; set; }
+        public int Id { get; set; }
         public int Number { get; set; }
         public string Name { get; set; }
         public int CondominiumId { get; set; }
@@ -10,7 +10,7 @@
 
         public int FloorCount { get; set; }
 
-        public ICollection<User> Users { get; set; }
+        public ICollection<UserProfile> Users { get; set; }
 
         public ICollection<Service> Services { get; set; }
 

@@ -2,7 +2,7 @@
 
 public partial class Service
 {
-    public int ServiceId { get; set; }
+    public int Id { get; set; }
     public DateTime ScheduledDate { get; set; }
     public string Status { get; set; }
     public string ProviderName { get; set; }

@@ -1,70 +1,24 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
-using SmartCondoApi.Models;
 using SmartCondoApi.Services;
 
 namespace SmartCondoApi.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class UserController(SmartCondoContext _context, UserService _userService) : ControllerBase
+    public class UserController(UserService _userService) : ControllerBase
     {
-        // Adicionar um usuário
-        [HttpPost]
-        [Authorize]
-        public async Task<ActionResult> AddUser([FromBody] UserCreateDTO userCreateDTO)
+        [HttpPost(Name = "login")]
+        [AllowAnonymous]
+        public async Task<ActionResult> Login([FromBody] Dictionary<string, string> body)
         {
             try
             {
-                var userResponseDTO = await _userService.AddUserAsync(userCreateDTO);
-                return Ok(userResponseDTO);
-            }
-            catch (InvalidPersonalTaxIDException ex)
-            {
-                return BadRequest(new { ex.Message });
-            }
-            catch (InvalidCredentialsException ex)
-            {
-                return BadRequest(new { ex.Message });
-            }
-            catch (InconsistentDataException ex)
-            {
-                return BadRequest(new { ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (CondominiumDisabledException ex)
-            {
-                return Unauthorized(new { ex.Message });
-            }
-            catch (UsersExceedException ex)
-            {
-                return Unauthorized(new { ex.Message });
-            }
-            catch (ParkingSpaceNumberException ex)
-            {
-                return Unauthorized(new { ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Ocorreu um erro interno. Mensagem: {ex.Message}");
-            }
-        }
+                var token = await _userService.Login(body);
 
-        // Atualizar um usuário
-        [HttpPut("{id}")]
-        [Authorize]
-        public async Task<IActionResult> UpdateUser(long id, [FromBody] UserUpdateDTO updatedUser)
-        {
-            try
-            {
-                var userResponseDTO = await _userService.UpdateUserAsync(id, updatedUser);
-                return Ok(userResponseDTO);
+                return Ok(new { token });
             }
             catch (InvalidCredentialsException ex)
             {
@@ -74,47 +28,35 @@ namespace SmartCondoApi.Controllers
             {
                 return NotFound(new { ex.Message });
             }
+            catch (UserTypeNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
+            catch (UnconfirmedEmailException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (UserLockedException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (UserDisabledException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (UserExpiredException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (IncorrectPasswordException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { ex.Message });
             }
         }
-
-        //Obter todos os usuários
-        [HttpGet]
-        [Authorize]
-        public async Task<IEnumerable<User>> Get()
-        {
-            return await _context.Users.ToListAsync();
-        }
-
-        // Obter um usuário por ID
-        [HttpGet("{id}")]
-        [Authorize]
-        public async Task<IActionResult> GetUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(user);
-        }
-
-        //Deletar um usuário por ID
-        [HttpDelete("{id}")]
-        [Authorize]
-        public async Task<IActionResult> Delete(int id)
-        {
-            if (id < 1)
-                return BadRequest();
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-                return NotFound();
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-            return Ok();
-
-        }
     }
 }
+

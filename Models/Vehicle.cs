@@ -9,7 +9,7 @@
 
     public class Vehicle
     {
-        public int VehicleId { get; set; } // PK
+        public int Id { get; set; } // PK
 
         public VehicleType Type { get; set; }
         public string LicensePlate { get; set; }
@@ -19,8 +19,8 @@
         public bool Enabled { get; set; }
 
         // Relacionamento com User (dono do veiculo)
-        public int UserId { get; set; } // FK
-        public User User { get; set; }
+        public long UserId { get; set; } // FK
+        public UserProfile User { get; set; }
 
     }
 }

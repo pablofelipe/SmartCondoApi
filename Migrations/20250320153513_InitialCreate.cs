@@ -13,10 +13,25 @@ namespace SmartCondoApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AspNetRoles",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Condominiums",
                 columns: table => new
                 {
-                    CondominiumId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: false),
@@ -26,42 +41,63 @@ namespace SmartCondoApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Condominiums", x => x.CondominiumId);
+                    table.PrimaryKey("PK_Condominiums", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "ServiceTypes",
                 columns: table => new
                 {
-                    ServiceTypeId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ServiceTypes", x => x.ServiceTypeId);
+                    table.PrimaryKey("PK_ServiceTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "UserTypes",
                 columns: table => new
                 {
-                    UserTypeId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserTypes", x => x.UserTypeId);
+                    table.PrimaryKey("PK_UserTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetRoleClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<long>(type: "bigint", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Towers",
                 columns: table => new
                 {
-                    TowerId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Number = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
@@ -70,12 +106,12 @@ namespace SmartCondoApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Towers", x => x.TowerId);
+                    table.PrimaryKey("PK_Towers", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Towers_Condominiums_CondominiumId",
                         column: x => x.CondominiumId,
                         principalTable: "Condominiums",
-                        principalColumn: "CondominiumId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -83,7 +119,7 @@ namespace SmartCondoApi.Migrations
                 name: "Services",
                 columns: table => new
                 {
-                    ServiceId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ScheduledDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
@@ -97,31 +133,31 @@ namespace SmartCondoApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Services", x => x.ServiceId);
+                    table.PrimaryKey("PK_Services", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Services_Condominiums_CondominiumId",
                         column: x => x.CondominiumId,
                         principalTable: "Condominiums",
-                        principalColumn: "CondominiumId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Services_ServiceTypes_ServiceTypeId",
                         column: x => x.ServiceTypeId,
                         principalTable: "ServiceTypes",
-                        principalColumn: "ServiceTypeId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Services_Towers_TowerId",
                         column: x => x.TowerId,
                         principalTable: "Towers",
-                        principalColumn: "TowerId");
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "UserProfiles",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: false),
@@ -138,46 +174,54 @@ namespace SmartCondoApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.UserId);
+                    table.PrimaryKey("PK_UserProfiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Condominiums_CondominiumId",
+                        name: "FK_UserProfiles_Condominiums_CondominiumId",
                         column: x => x.CondominiumId,
                         principalTable: "Condominiums",
-                        principalColumn: "CondominiumId");
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Users_Towers_TowerId",
+                        name: "FK_UserProfiles_Towers_TowerId",
                         column: x => x.TowerId,
                         principalTable: "Towers",
-                        principalColumn: "TowerId");
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Users_UserTypes_UserTypeId",
+                        name: "FK_UserProfiles_UserTypes_UserTypeId",
                         column: x => x.UserTypeId,
                         principalTable: "UserTypes",
-                        principalColumn: "UserTypeId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Logins",
+                name: "AspNetUsers",
                 columns: table => new
                 {
-                    LoginId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: false),
-                    Expiration = table.Column<DateOnly>(type: "date", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false),
                     Enabled = table.Column<bool>(type: "boolean", nullable: false),
-                    IsEmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Logins", x => x.LoginId);
+                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Logins_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
+                        name: "FK_AspNetUsers_UserProfiles_Id",
+                        column: x => x.Id,
+                        principalTable: "UserProfiles",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -185,41 +229,41 @@ namespace SmartCondoApi.Migrations
                 name: "Messages",
                 columns: table => new
                 {
-                    MessageId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Content = table.Column<string>(type: "text", nullable: false),
                     SentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    SenderId = table.Column<int>(type: "integer", nullable: false),
+                    SenderId = table.Column<long>(type: "bigint", nullable: false),
                     CondominiumId = table.Column<int>(type: "integer", nullable: false),
                     TowerId = table.Column<int>(type: "integer", nullable: true),
                     FloorId = table.Column<int>(type: "integer", nullable: true),
-                    RecipientId = table.Column<int>(type: "integer", nullable: true)
+                    RecipientId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Messages", x => x.MessageId);
+                    table.PrimaryKey("PK_Messages", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Messages_Condominiums_CondominiumId",
                         column: x => x.CondominiumId,
                         principalTable: "Condominiums",
-                        principalColumn: "CondominiumId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Messages_Towers_TowerId",
                         column: x => x.TowerId,
                         principalTable: "Towers",
-                        principalColumn: "TowerId");
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Messages_Users_RecipientId",
+                        name: "FK_Messages_UserProfiles_RecipientId",
                         column: x => x.RecipientId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalTable: "UserProfiles",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Messages_Users_SenderId",
+                        name: "FK_Messages_UserProfiles_SenderId",
                         column: x => x.SenderId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalTable: "UserProfiles",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -227,7 +271,7 @@ namespace SmartCondoApi.Migrations
                 name: "Vehicles",
                 columns: table => new
                 {
-                    VehicleId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     LicensePlate = table.Column<string>(type: "text", nullable: false),
@@ -235,16 +279,101 @@ namespace SmartCondoApi.Migrations
                     Model = table.Column<string>(type: "text", nullable: false),
                     Color = table.Column<string>(type: "text", nullable: false),
                     Enabled = table.Column<bool>(type: "boolean", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Vehicles", x => x.VehicleId);
+                    table.PrimaryKey("PK_Vehicles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Vehicles_Users_UserId",
+                        name: "FK_Vehicles_UserProfiles_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
+                        principalTable: "UserProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUserClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUserClaims_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUserLogins",
+                columns: table => new
+                {
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserLogins_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUserRoles",
+                columns: table => new
+                {
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    RoleId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserRoles", x => new { x.UserId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AspNetUserRoles_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUserTokens",
+                columns: table => new
+                {
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -256,29 +385,60 @@ namespace SmartCondoApi.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Token = table.Column<string>(type: "text", nullable: false),
                     Expires = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LoginId = table.Column<int>(type: "integer", nullable: false)
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PasswordResetTokens", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PasswordResetTokens_Logins_LoginId",
-                        column: x => x.LoginId,
-                        principalTable: "Logins",
-                        principalColumn: "LoginId",
+                        name: "FK_PasswordResetTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Logins_Email",
-                table: "Logins",
+                name: "IX_AspNetRoleClaims_RoleId",
+                table: "AspNetRoleClaims",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                table: "AspNetRoles",
+                column: "NormalizedName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserClaims_UserId",
+                table: "AspNetUserClaims",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserLogins_UserId",
+                table: "AspNetUserLogins",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserRoles_RoleId",
+                table: "AspNetUserRoles",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "AspNetUsers",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_Email",
+                table: "AspNetUsers",
                 column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Logins_UserId",
-                table: "Logins",
-                column: "UserId",
+                name: "UserNameIndex",
+                table: "AspNetUsers",
+                column: "NormalizedUserName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -302,9 +462,9 @@ namespace SmartCondoApi.Migrations
                 column: "TowerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PasswordResetTokens_LoginId",
+                name: "IX_PasswordResetTokens_UserId",
                 table: "PasswordResetTokens",
-                column: "LoginId");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Services_CondominiumId",
@@ -327,24 +487,24 @@ namespace SmartCondoApi.Migrations
                 column: "CondominiumId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_CondominiumId",
-                table: "Users",
+                name: "IX_UserProfiles_CondominiumId",
+                table: "UserProfiles",
                 column: "CondominiumId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_PersonalTaxID",
-                table: "Users",
+                name: "IX_UserProfiles_PersonalTaxID",
+                table: "UserProfiles",
                 column: "PersonalTaxID",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_TowerId",
-                table: "Users",
+                name: "IX_UserProfiles_TowerId",
+                table: "UserProfiles",
                 column: "TowerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_UserTypeId",
-                table: "Users",
+                name: "IX_UserProfiles_UserTypeId",
+                table: "UserProfiles",
                 column: "UserTypeId");
 
             migrationBuilder.CreateIndex(
@@ -363,6 +523,21 @@ namespace SmartCondoApi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AspNetRoleClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserLogins");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
                 name: "Messages");
 
             migrationBuilder.DropTable(
@@ -375,13 +550,16 @@ namespace SmartCondoApi.Migrations
                 name: "Vehicles");
 
             migrationBuilder.DropTable(
-                name: "Logins");
+                name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "ServiceTypes");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "UserProfiles");
 
             migrationBuilder.DropTable(
                 name: "Towers");

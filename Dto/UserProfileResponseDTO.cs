@@ -3,9 +3,9 @@ using SmartCondoApi.Dto;
 
 namespace SmartCondoApi.dto
 {
-    public class UserResponseDTO
+    public class UserProfileResponseDTO
     {
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
         public int UserTypeId { get; set; }
@@ -17,5 +17,7 @@ namespace SmartCondoApi.dto
         public int? ParkingSpaceNumber { get; set; }
 
         public ICollection<VehicleDTO> Vehicles { get; set; } = new List<VehicleDTO>();
+        public string Message { get; internal set; }
+        public string Token { get; internal set; }
     }
 }
