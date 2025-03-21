@@ -6,7 +6,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class CondominiumController(SmartCondoContext _context) : ControllerBase
     {
         [HttpGet]

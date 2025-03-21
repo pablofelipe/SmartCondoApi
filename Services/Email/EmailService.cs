@@ -1,8 +1,7 @@
-﻿using SmartCondoApi.Services;
-using System.Net.Mail;
+﻿using System.Net.Mail;
 using System.Net;
 
-namespace SmartCondoApi.Infra
+namespace SmartCondoApi.Services.Email
 {
     public class EmailService : IEmailService
     {

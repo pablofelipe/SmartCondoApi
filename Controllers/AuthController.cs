@@ -1,37 +1,60 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SmartCondoApi.Models;
+using SmartCondoApi.Exceptions;
+using SmartCondoApi.Services.Auth;
 
 namespace SmartCondoApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController(UserManager<User> userManager) : ControllerBase
+    [Route("api/v{version:apiVersion}/[controller]")]
+    public class AuthController(IAuthService _userService) : ControllerBase
     {
-        private readonly UserManager<User> _userManager = userManager;
-
-        [HttpGet("confirm-email")]
-        public async Task<ActionResult> ConfirmEmail(string userId, string token)
+        [HttpPost("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult> Login([FromBody] Dictionary<string, string> body)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
+            try
             {
-                return NotFound("Usuário não encontrado.");
+                var token = await _userService.Login(body);
+
+                return Ok(new { token });
             }
-
-            var result = await _userManager.ConfirmEmailAsync(user, token);
-
-            if (result.Succeeded)
+            catch (InvalidCredentialsException ex)
             {
-                user.Enabled = true;
-                user.EmailConfirmed = true;
-                await _userManager.UpdateAsync(user);
-
-                return Ok("E-mail confirmado com sucesso.");
+                return BadRequest(new { ex.Message });
             }
-
-            return BadRequest("Erro ao confirmar o e-mail.");
+            catch (UserNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
+            catch (UserTypeNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
+            catch (UnconfirmedEmailException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (UserLockedException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (UserDisabledException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (UserExpiredException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (IncorrectPasswordException ex)
+            {
+                return Unauthorized(new { ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { ex.Message });
+            }
         }
     }
 }

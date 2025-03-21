@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SmartCondoApi.Dto;
-using SmartCondoApi.Services;
+using SmartCondoApi.Services.ForgotPassword;
 
 namespace SmartCondoApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class ForgotPasswordController(IForgotPasswordService _forgotPasswordService) : ControllerBase
     {
         [HttpPost("forgot-password")]

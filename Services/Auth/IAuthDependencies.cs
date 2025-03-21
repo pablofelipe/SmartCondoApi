@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SmartCondoApi.Models;
 
-namespace SmartCondoApi.Services
+namespace SmartCondoApi.Services.Auth
 {
-    public interface IUserDependencies
+    public interface IAuthDependencies
     {
         SmartCondoContext Context { get; }
         IConfiguration Configuration { get; }
-        UserManager<User> UserManager { get; }
+        UserManager<Models.User> UserManager { get; }
     }
 }

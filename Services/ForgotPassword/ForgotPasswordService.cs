@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCondoApi.Dto;
 using SmartCondoApi.Models;
+using SmartCondoApi.Services.Email;
 using System.Security.Cryptography;
 
 
-namespace SmartCondoApi.Services
+namespace SmartCondoApi.Services.ForgotPassword
 {
     public interface IForgotPasswordService
     {

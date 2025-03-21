@@ -1,18 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
-using SmartCondoApi.dto;
 using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
 using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
 
-namespace SmartCondoApi.Services
+namespace SmartCondoApi.Services.User
 {
-    public class UserProfileService(IUserProfileDependencies dependencies)
+    public class UserProfileService(IUserProfileServiceDependencies _dependencies) : IUserProfileService
     {
-        private readonly IUserProfileDependencies _dependencies = dependencies;
-
         public async Task<UserProfileResponseDTO> AddUserAsync(UserProfileCreateDTO userCreateDTO)
         {
             // Valida o CPF
@@ -40,11 +36,18 @@ namespace SmartCondoApi.Services
                 throw new UserAlreadyExistsException($"CPF {userCreateDTO.PersonalTaxId} já cadastrado");
             }
 
+            var userTypes = await _dependencies.Context.UserTypes.FirstOrDefaultAsync(ut => ut.Id == userCreateDTO.UserTypeId);
+
+            if (null == userTypes)
+            {
+                throw new ArgumentException($"Tipo de usuário {userCreateDTO.UserTypeId} não encontrado");
+            }
+
             var condo = await context.Condominiums.FirstOrDefaultAsync(c => c.Id == userCreateDTO.CondominiumId);
 
             if (null == condo)
             {
-                if (await SystemAdmin(userCreateDTO) == false)
+                if (await SystemAdmin(userTypes.Name) == false)
                     throw new ArgumentException($"Condominio {userCreateDTO.CondominiumId} não encontrado");
             }
             else
@@ -71,7 +74,7 @@ namespace SmartCondoApi.Services
                 await ResidentValidations(userCreateDTO, condo);
             }
 
-            var user = new User
+            var user = new Models.User
             {
                 UserName = userCreateDTO.User.Email,
                 Email = userCreateDTO.User.Email,
@@ -100,25 +103,23 @@ namespace SmartCondoApi.Services
             await context.Users.AddAsync(user);
             await context.SaveChangesAsync();
 
-            await dependencies.UserManager.UpdateSecurityStampAsync(user);
-            await dependencies.UserManager.UpdateNormalizedEmailAsync(user);
-            await dependencies.UserManager.UpdateNormalizedUserNameAsync(user);
-            var token = await dependencies.UserManager.GenerateEmailConfirmationTokenAsync(user);
 
-            var request = dependencies.HttpContextAccessor.HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}";
+            await _dependencies.UserManager.UpdateSecurityStampAsync(user);
+            await _dependencies.UserManager.UpdateNormalizedEmailAsync(user);
+            await _dependencies.UserManager.UpdateNormalizedUserNameAsync(user);
+            var token = await _dependencies.UserManager.GenerateEmailConfirmationTokenAsync(user);
 
-            var confirmationLink = $"{baseUrl}/confirm-email?userId={userProfile.Id}&token={token}";
+            //await dependencies.UserManager.AddToRoleAsync(user, userTypes.Name);
 
-            await dependencies.EmailService.SendEmailAsync(
-                userProfile.User.Email,
-                "Confirme seu e-mail",
-                $"Por favor, confirme seu e-mail clicando neste link: {confirmationLink}"
-            );
+            //var roles = await dependencies.UserManager.GetRolesAsync(user);
+            //foreach (var role in roles)
+            //{
+            //    claims.Add(new Claim(ClaimTypes.Role, role));
+            //}
 
             return new UserProfileResponseDTO()
             {
-                UserId = user.Id,
+                Id = user.Id,
                 Name = userCreateDTO.Name,
                 Address = userCreateDTO.Address,
                 UserTypeId = userCreateDTO.UserTypeId,
@@ -133,18 +134,9 @@ namespace SmartCondoApi.Services
             };
         }
 
-        private async Task<bool> SystemAdmin(UserProfileCreateDTO userCreateDTO)
+        private async Task<bool> SystemAdmin(string userTypeName)
         {
-            var context = _dependencies.Context;
-
-            var userTypes = await context.UserTypes.FirstOrDefaultAsync(ut => ut.Id == userCreateDTO.UserTypeId);
-
-            if (null == userTypes)
-            {
-                throw new ArgumentException($"Tipo de usuário {userCreateDTO.UserTypeId} não encontrado");
-            }
-
-            return string.Compare(userTypes.Name, "SystemAdministrator", StringComparison.OrdinalIgnoreCase) == 0;
+            return string.Compare(userTypeName, "SystemAdministrator", StringComparison.OrdinalIgnoreCase) == 0;
         }
 
         private async Task ResidentValidations(UserProfileCreateDTO userCreateDTO, Condominium condo)
@@ -251,6 +243,41 @@ namespace SmartCondoApi.Services
                 FloorId = user.FloorId,
                 Apartment = user.Apartment
             };
+        }
+
+        public async Task<IEnumerable<UserProfile>> Get()
+        {
+            return await _dependencies.Context.UserProfiles.ToListAsync();
+        }
+
+        public async Task<UserProfile> GetUser(long id)
+        {
+            var user = await _dependencies.Context.UserProfiles.FindAsync(id);
+            if (user == null)
+            {
+                throw new UserNotFoundException("Usuário não encontrado.");
+            }
+
+            return user;
+        }
+
+        public async Task Delete(long id)
+        {
+            if (id < 1)
+            {
+                throw new InconsistentDataException($"Numero do id {id} incorreto.");
+            }
+
+            var userProfile = await _dependencies.Context.UserProfiles.FindAsync(id);
+            if (userProfile == null)
+            {
+                throw new UserNotFoundException("Usuário não encontrado.");
+            }
+
+            userProfile.User.Enabled = false;
+            //_context.UserProfiles.Remove(user);
+
+            await _dependencies.Context.SaveChangesAsync();
         }
     }
 }

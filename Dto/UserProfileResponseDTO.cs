@@ -1,11 +1,9 @@
 ﻿
-using SmartCondoApi.Dto;
-
-namespace SmartCondoApi.dto
+namespace SmartCondoApi.Dto
 {
     public class UserProfileResponseDTO
     {
-        public long UserId { get; set; }
+        public long Id { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
         public int UserTypeId { get; set; }

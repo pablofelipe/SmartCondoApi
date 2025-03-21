@@ -68,5 +68,25 @@ namespace SmartCondoApi.Infra
             using ICryptoTransform decryptor = tripleDES.CreateDecryptor();
             return decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
         }
+
+        public static string GenerateSHA256Hash(string input, string salt)
+        {
+            var saltedInput = input + salt;
+
+            var inputBytes = Encoding.UTF8.GetBytes(saltedInput);
+
+            using (var sha256 = SHA256.Create())
+            {
+                var hashBytes = sha256.ComputeHash(inputBytes);
+
+                var sb = new StringBuilder();
+                foreach (var b in hashBytes)
+                {
+                    sb.Append(b.ToString("x2"));
+                }
+
+                return sb.ToString();
+            }
+        }
     }
 }

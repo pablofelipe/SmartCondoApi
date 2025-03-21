@@ -1,18 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using SmartCondoApi.Exceptions;
-using SmartCondoApi.Models;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
-namespace SmartCondoApi.Services
+namespace SmartCondoApi.Services.Auth
 {
-    public class UserService(IUserDependencies dependencies)
+    public class AuthService(IAuthDependencies _dependencies) : IAuthService
     {
-        private readonly IUserDependencies _dependencies = dependencies;
-
         public async Task<string> Login([FromBody] Dictionary<string, string> body)
         {
             if (!body.TryGetValue("user", out string userText) || string.IsNullOrEmpty(userText))
@@ -68,33 +61,12 @@ namespace SmartCondoApi.Services
                 throw new UserTypeNotFoundException("Tipo de Usuário não encontrado.");
             }
 
-            return GenerateJwtToken(user, dbUserType.Name);
+            return GenerateToken(user, dbUserType.Name);
         }
 
-
-        private string GenerateJwtToken(User user, string userType)
+        private string GenerateToken(Models.User user, string userType)
         {
-            var configuration = _dependencies.Configuration;
-
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Role, userType) // Exemplo de role
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: configuration["Jwt:Issuer"],
-                audience: configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddDays(1), // Tempo de expiração do token
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return new Infra.TokenHandler(_dependencies.Configuration).Generate(user.Id.ToString(), user.Email, userType, DateTime.Now.AddDays(1));
         }
     }
 }

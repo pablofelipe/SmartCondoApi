@@ -1,4 +1,4 @@
-﻿namespace SmartCondoApi.Services
+﻿namespace SmartCondoApi.Services.Email
 {
     public interface IEmailService
     {

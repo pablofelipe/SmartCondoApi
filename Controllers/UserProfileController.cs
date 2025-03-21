@@ -1,16 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
 using SmartCondoApi.Models;
-using SmartCondoApi.Services;
 
 namespace SmartCondoApi.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
-    public class UserProfileController(SmartCondoContext _context, UserProfileService _userProfileService) : ControllerBase
+    [Route("api/v{version:apiVersion}/[controller]")]
+    public class UserProfileController(IUserProfileControllerDependencies _dependencies) : ControllerBase
     {
         // Adicionar um usuário
         [HttpPost]
@@ -19,9 +17,16 @@ namespace SmartCondoApi.Controllers
         {
             try
             {
-                var userResponseDTO = await _userProfileService.AddUserAsync(userCreateDTO);
-                
-                return Ok(userResponseDTO);
+                var userProfileResponseDTO = await _dependencies.UserProfileService.AddUserAsync(userCreateDTO);
+
+                string confirmationLink = _dependencies.LinkGeneratorService.GenerateConfirmationLink("confirm-email", "UserProfile", new { userId = userProfileResponseDTO.Id, userProfileResponseDTO.Token });
+
+                await _dependencies.EmailService.SendEmailAsync(
+                    userCreateDTO.User.Email,
+                    "Confirme seu e-mail",
+                    $"Por favor, confirme seu e-mail clicando neste link: {confirmationLink}");
+
+                return Ok(userProfileResponseDTO);
             }
             catch (InvalidPersonalTaxIDException ex)
             {
@@ -65,6 +70,30 @@ namespace SmartCondoApi.Controllers
             }
         }
 
+        // Confirmação do email para finalização do cadastro de usuário
+        [HttpGet("confirm-email")]
+        public async Task<ActionResult> ConfirmEmail(string userId, string token)
+        {
+            try
+            {
+                await _dependencies.EmailConfirmationService.ConfirmEmail(userId, token);
+
+                return Ok("E-mail confirmado com sucesso.");
+            }
+            catch (UserNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
+            catch (ConfirmEmailException ex)
+            {
+                return BadRequest(new { ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { ex.Message });
+            }
+        }
+
         // Atualizar um usuário
         [HttpPut("{id}")]
         [Authorize]
@@ -72,7 +101,7 @@ namespace SmartCondoApi.Controllers
         {
             try
             {
-                var userResponseDTO = await _userProfileService.UpdateUserAsync(id, updatedUser);
+                var userResponseDTO = await _dependencies.UserProfileService.UpdateUserAsync(id, updatedUser);
                 return Ok(userResponseDTO);
             }
             catch (InvalidCredentialsException ex)
@@ -89,41 +118,55 @@ namespace SmartCondoApi.Controllers
             }
         }
 
+
         //Obter todos os usuários
         [HttpGet]
         [Authorize]
         public async Task<IEnumerable<UserProfile>> Get()
         {
-            return await _context.UserProfiles.ToListAsync();
+            return await _dependencies.UserProfileService.Get();
         }
 
         // Obter um usuário por ID
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<ActionResult> GetUser(int id)
+        public async Task<ActionResult> GetUser(long id)
         {
-            var user = await _context.UserProfiles.FindAsync(id);
-            if (user == null)
+            try
             {
-                return NotFound();
+                var user = await _dependencies.UserProfileService.GetUser(id);
+
+                return Ok(user);
             }
-            return Ok(user);
+            catch (UserNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { ex.Message });
+            }
         }
 
         //Deletar um usuário por ID
         [HttpDelete("{id}")]
         [Authorize]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<ActionResult> Delete(long id)
         {
-            if (id < 1)
-                return BadRequest();
-            var user = await _context.UserProfiles.FindAsync(id);
-            if (user == null)
-                return NotFound();
-            _context.UserProfiles.Remove(user);
-            await _context.SaveChangesAsync();
-            return Ok();
+            try
+            {
+                await _dependencies.UserProfileService.Delete(id);
 
+                return Ok();
+            }
+            catch (UserNotFoundException ex)
+            {
+                return NotFound(new { ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { ex.Message });
+            }
         }
     }
 }
