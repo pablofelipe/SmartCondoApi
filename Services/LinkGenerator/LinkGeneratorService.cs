@@ -19,13 +19,21 @@
                 throw new InvalidOperationException("HttpContext não está disponível.");
             }
 
-            return _linkGenerator.GetUriByAction(
+            var result = _linkGenerator.GetUriByAction(
                 httpContext,
                 action: action,
                 controller: controller,
                 values: values,
-                scheme: httpContext.Request.Scheme
+                scheme: httpContext.Request.Scheme,
+                host: httpContext.Request.Host
             );
+
+            if (null == result)
+            {
+                throw new InvalidOperationException("Link generator failed.");
+            }
+
+            return result;
         }
     }
 }

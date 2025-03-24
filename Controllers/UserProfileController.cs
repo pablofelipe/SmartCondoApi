@@ -19,7 +19,14 @@ namespace SmartCondoApi.Controllers
             {
                 var userProfileResponseDTO = await _dependencies.UserProfileService.AddUserAsync(userCreateDTO);
 
-                string confirmationLink = _dependencies.LinkGeneratorService.GenerateConfirmationLink("confirm-email", "UserProfile", new { userId = userProfileResponseDTO.Id, userProfileResponseDTO.Token });
+                string confirmationLink = _dependencies.LinkGeneratorService.GenerateConfirmationLink(
+                    "ConfirmEmail",
+                    "UserProfile",
+                    new
+                    {
+                        userId = userProfileResponseDTO.Id,
+                        token = userProfileResponseDTO.Token
+                    });
 
                 await _dependencies.EmailService.SendEmailAsync(
                     userCreateDTO.User.Email,
@@ -42,7 +49,7 @@ namespace SmartCondoApi.Controllers
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { ex.Message });
             }
             catch (LoginAlreadyExistsException ex)
             {
@@ -66,12 +73,13 @@ namespace SmartCondoApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Ocorreu um erro interno. Mensagem: {ex.Message}");
+                return StatusCode(500, new { message = $"Ocorreu um erro interno. Mensagem: {ex.Message}" });
             }
         }
 
         // Confirmação do email para finalização do cadastro de usuário
-        [HttpGet("confirm-email")]
+        //[HttpGet("confirm-email")]
+        [HttpGet("confirm-email/{userId}/{token}", Name = "ConfirmEmail")]
         public async Task<ActionResult> ConfirmEmail(string userId, string token)
         {
             try

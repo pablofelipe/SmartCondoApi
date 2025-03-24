@@ -6,9 +6,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
+using SmartCondoApi.Controllers;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services.Auth;
 using SmartCondoApi.Services.Email;
+using SmartCondoApi.Services.LinkGenerator;
 using SmartCondoApi.Services.User;
 using System.Text;
 
@@ -61,26 +63,36 @@ builder.Services.AddScoped<IAuthService>(provider =>
     return new AuthService(userDependencies);
 });
 
+builder.Services.AddScoped<IUserProfileServiceDependencies, UserProfileServiceDependencies>();
+builder.Services.AddScoped<IUserProfileService>(provider =>
+{
+    var userProfileDependencies = provider.GetRequiredService<IUserProfileServiceDependencies>();
+
+    return new UserProfileService(userProfileDependencies);
+});
+
+builder.Services.AddScoped<ILinkGeneratorService, LinkGeneratorService>();
+
 builder.Services.AddScoped<IEmailService>(email => {
     var configuration = email.GetRequiredService<IConfiguration>();
     return new EmailService(configuration);
 });
 
-builder.Services.AddScoped<IUserProfileServiceDependencies, UserProfileServiceDependencies>();
-builder.Services.AddScoped(provider =>
-{
-    var userProfileDependencies = provider.GetRequiredService<IUserProfileServiceDependencies>();
+builder.Services.AddScoped<IEmailConfirmationService, EmailConfirmationService>();
 
-    return new UserProfileService(userProfileDependencies);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddRouting();
+
+builder.Services.AddScoped<IUserProfileControllerDependencies>(provider =>
+{
+    var userProfileService = provider.GetRequiredService<IUserProfileService>();
+    var linkGeneratorService = provider.GetRequiredService<ILinkGeneratorService>();
+    var emailService = provider.GetRequiredService<IEmailService>();
+    var emailConfService = provider.GetRequiredService<IEmailConfirmationService>();
+
+    return new UserProfileControllerDependencies(userProfileService, linkGeneratorService, emailService, emailConfService);
 });
 
-builder.Services.AddScoped<IUserProfileServiceDependencies, UserProfileServiceDependencies>();
-builder.Services.AddScoped(provider =>
-{
-    var userProfileDependencies = provider.GetRequiredService<IUserProfileServiceDependencies>();
-
-    return new UserProfileService(userProfileDependencies);
-});
 
 builder.Services.AddAuthorization();
 
@@ -157,6 +169,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 

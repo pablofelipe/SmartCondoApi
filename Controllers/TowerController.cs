@@ -30,6 +30,7 @@ namespace SmartCondoApi.Controllers
         //}
 
         [HttpGet("byCondominium/{condominiumId}")]
+        [Authorize]
         public async Task<IActionResult> GetTowersByCondominium(int condominiumId)
         {
             var towers = await _context.Towers.Where(t => t.CondominiumId == condominiumId).ToListAsync();

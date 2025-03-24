@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SmartCondoApi.Exceptions;
+using System.Net;
 
 namespace SmartCondoApi.Services.Email
 {
@@ -14,11 +15,17 @@ namespace SmartCondoApi.Services.Email
                 throw new UserNotFoundException("Usuário não encontrado.");
             }
 
-            var result = await _userManager.ConfirmEmailAsync(user, token);
+            string decodedToken = Uri.UnescapeDataString(token);
+
+            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
 
             if (!result.Succeeded)
             {
-                throw new ConfirmEmailException("Erro ao confirmar o e-mail.");
+                string descriptions = string.Join(", ", result.Errors
+                    .Where(i => !string.IsNullOrEmpty(i.Description))
+                    .Select(i => i.Description));
+
+                throw new ConfirmEmailException(message: $"Erro ao confirmar o e-mail. Mensagem: {descriptions}");
             }
 
             user.Enabled = true;
