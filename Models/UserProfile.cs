@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace SmartCondoApi.Models;
 
@@ -8,7 +9,7 @@ public class UserProfile
     {
         Vehicles = [];
         SentMessages = [];
-        ReceivedMessages = [];
+        UserMessages = [];
     }
 
     public long Id { get; set; } // Chave primária
@@ -47,10 +48,12 @@ public class UserProfile
     public ICollection<Vehicle> Vehicles { get; set; }
 
     // Relacionamento com Message (Sender)
+    [InverseProperty("Sender")]
     [JsonIgnore]
     public ICollection<Message> SentMessages { get; set; }
 
     // Relacionamento com Message (Recipient)
+    [InverseProperty("UserProfile")]
     [JsonIgnore]
-    public ICollection<Message> ReceivedMessages { get; set; }
+    public virtual ICollection<UserMessage> UserMessages { get; set; }
 }

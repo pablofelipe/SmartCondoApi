@@ -2,16 +2,21 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 using SmartCondoApi.Controllers;
+using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services.Auth;
 using SmartCondoApi.Services.Email;
 using SmartCondoApi.Services.LinkGenerator;
+using SmartCondoApi.Services.Message;
+using SmartCondoApi.Services.Permission;
 using SmartCondoApi.Services.User;
+using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -93,7 +98,6 @@ builder.Services.AddScoped<IUserProfileControllerDependencies>(provider =>
     return new UserProfileControllerDependencies(userProfileService, linkGeneratorService, emailService, emailConfService);
 });
 
-
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
@@ -154,7 +158,24 @@ builder.Services.AddApiVersioning(options =>
     options.ReportApiVersions = true;
 });
 
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 1024; // Limite de tamanho em MB
+});
+
+builder.Services.AddScoped<PermissionService>();
+
+builder.Services.AddScoped<IMessageService, MessageService>();
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<long>>>();
+    await SmartCondoContext.SeedPermissionsAsync(roleManager);
+}
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

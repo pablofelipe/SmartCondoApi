@@ -233,11 +233,13 @@ namespace SmartCondoApi.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Content = table.Column<string>(type: "text", nullable: false),
                     SentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Scope = table.Column<int>(type: "integer", nullable: false),
                     SenderId = table.Column<long>(type: "bigint", nullable: false),
                     CondominiumId = table.Column<int>(type: "integer", nullable: false),
                     TowerId = table.Column<int>(type: "integer", nullable: true),
                     FloorId = table.Column<int>(type: "integer", nullable: true),
-                    RecipientId = table.Column<long>(type: "bigint", nullable: true)
+                    RecipientId = table.Column<long>(type: "bigint", nullable: true),
+                    RecipientUserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -254,11 +256,11 @@ namespace SmartCondoApi.Migrations
                         principalTable: "Towers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Messages_UserProfiles_RecipientId",
-                        column: x => x.RecipientId,
+                        name: "FK_Messages_UserProfiles_RecipientUserId",
+                        column: x => x.RecipientUserId,
                         principalTable: "UserProfiles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Messages_UserProfiles_SenderId",
                         column: x => x.SenderId,
@@ -398,6 +400,40 @@ namespace SmartCondoApi.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserMessages",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    MessageId = table.Column<long>(type: "bigint", nullable: false),
+                    UserProfileId = table.Column<long>(type: "bigint", nullable: false),
+                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
+                    ReadDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UserProfileId1 = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserMessages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserMessages_Messages_MessageId",
+                        column: x => x.MessageId,
+                        principalTable: "Messages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserMessages_UserProfiles_UserProfileId",
+                        column: x => x.UserProfileId,
+                        principalTable: "UserProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserMessages_UserProfiles_UserProfileId1",
+                        column: x => x.UserProfileId1,
+                        principalTable: "UserProfiles",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -447,9 +483,9 @@ namespace SmartCondoApi.Migrations
                 column: "CondominiumId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_RecipientId",
+                name: "IX_Messages_RecipientUserId",
                 table: "Messages",
-                column: "RecipientId");
+                column: "RecipientUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_SenderId",
@@ -485,6 +521,21 @@ namespace SmartCondoApi.Migrations
                 name: "IX_Towers_CondominiumId",
                 table: "Towers",
                 column: "CondominiumId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserMessages_MessageId",
+                table: "UserMessages",
+                column: "MessageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserMessages_UserProfileId",
+                table: "UserMessages",
+                column: "UserProfileId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserMessages_UserProfileId1",
+                table: "UserMessages",
+                column: "UserProfileId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserProfiles_CondominiumId",
@@ -538,13 +589,13 @@ namespace SmartCondoApi.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Messages");
-
-            migrationBuilder.DropTable(
                 name: "PasswordResetTokens");
 
             migrationBuilder.DropTable(
                 name: "Services");
+
+            migrationBuilder.DropTable(
+                name: "UserMessages");
 
             migrationBuilder.DropTable(
                 name: "Vehicles");
@@ -557,6 +608,9 @@ namespace SmartCondoApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "ServiceTypes");
+
+            migrationBuilder.DropTable(
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "UserProfiles");

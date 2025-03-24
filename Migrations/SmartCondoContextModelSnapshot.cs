@@ -205,6 +205,12 @@ namespace SmartCondoApi.Migrations
                     b.Property<long?>("RecipientId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("RecipientUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Scope")
+                        .HasColumnType("integer");
+
                     b.Property<long>("SenderId")
                         .HasColumnType("bigint");
 
@@ -218,7 +224,7 @@ namespace SmartCondoApi.Migrations
 
                     b.HasIndex("CondominiumId");
 
-                    b.HasIndex("RecipientId");
+                    b.HasIndex("RecipientUserId");
 
                     b.HasIndex("SenderId");
 
@@ -421,6 +427,40 @@ namespace SmartCondoApi.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("SmartCondoApi.Models.UserMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("MessageId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("ReadDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("UserProfileId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("UserProfileId1")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("UserProfileId");
+
+                    b.HasIndex("UserProfileId1");
+
+                    b.ToTable("UserMessages");
+                });
+
             modelBuilder.Entity("SmartCondoApi.Models.UserProfile", b =>
                 {
                     b.Property<long>("Id")
@@ -607,11 +647,12 @@ namespace SmartCondoApi.Migrations
                         .IsRequired();
 
                     b.HasOne("SmartCondoApi.Models.UserProfile", "RecipientUser")
-                        .WithMany("ReceivedMessages")
-                        .HasForeignKey("RecipientId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany()
+                        .HasForeignKey("RecipientUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("SmartCondoApi.Models.UserProfile", "SenderUser")
+                    b.HasOne("SmartCondoApi.Models.UserProfile", "Sender")
                         .WithMany("SentMessages")
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -625,7 +666,7 @@ namespace SmartCondoApi.Migrations
 
                     b.Navigation("RecipientUser");
 
-                    b.Navigation("SenderUser");
+                    b.Navigation("Sender");
 
                     b.Navigation("Tower");
                 });
@@ -688,6 +729,29 @@ namespace SmartCondoApi.Migrations
                     b.Navigation("UserProfile");
                 });
 
+            modelBuilder.Entity("SmartCondoApi.Models.UserMessage", b =>
+                {
+                    b.HasOne("SmartCondoApi.Models.Message", "Message")
+                        .WithMany("UserMessages")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartCondoApi.Models.UserProfile", "UserProfile")
+                        .WithMany()
+                        .HasForeignKey("UserProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartCondoApi.Models.UserProfile", null)
+                        .WithMany("UserMessages")
+                        .HasForeignKey("UserProfileId1");
+
+                    b.Navigation("Message");
+
+                    b.Navigation("UserProfile");
+                });
+
             modelBuilder.Entity("SmartCondoApi.Models.UserProfile", b =>
                 {
                     b.HasOne("SmartCondoApi.Models.Condominium", "Condominium")
@@ -733,6 +797,11 @@ namespace SmartCondoApi.Migrations
                     b.Navigation("Users");
                 });
 
+            modelBuilder.Entity("SmartCondoApi.Models.Message", b =>
+                {
+                    b.Navigation("UserMessages");
+                });
+
             modelBuilder.Entity("SmartCondoApi.Models.ServiceType", b =>
                 {
                     b.Navigation("Services");
@@ -749,11 +818,11 @@ namespace SmartCondoApi.Migrations
 
             modelBuilder.Entity("SmartCondoApi.Models.UserProfile", b =>
                 {
-                    b.Navigation("ReceivedMessages");
-
                     b.Navigation("SentMessages");
 
                     b.Navigation("User");
+
+                    b.Navigation("UserMessages");
 
                     b.Navigation("Vehicles");
                 });
