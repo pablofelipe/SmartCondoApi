@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SmartCondoApi.Models.Permissions;
 using System.Security.Claims;
+using SmartCondoApi.Services.Permission;
 
 namespace SmartCondoApi.Models
 {
@@ -46,7 +47,7 @@ namespace SmartCondoApi.Models
                 .HasForeignKey<User>(l => l.Id);
 
             modelBuilder.Entity<UserProfile>()
-                .HasIndex(c => c.PersonalTaxID)
+                .HasIndex(c => c.RegistrationNumber)
                 .IsUnique();
 
             modelBuilder.Entity<UserProfile>()
@@ -140,116 +141,18 @@ namespace SmartCondoApi.Models
 
             base.OnModelCreating(modelBuilder);
         }
-
         public static async Task SeedPermissionsAsync(RoleManager<IdentityRole<long>> roleManager)
         {
-            // Permissões para SystemAdministrator
-            await CreateOrUpdateRoleAsync(roleManager, "SystemAdministrator", new UserTypePermission
+            foreach (var (roleName, permissions) in RolePermissions.Permissions)
             {
-                CanSendToIndividuals = true,
-                CanSendToGroups = true,
-                CanReceiveMessages = true,
-                AllowedRecipientTypes = ["SystemAdministrator", "CondominiumAdministrator", "Resident", "Janitor"]
-            });
-
-            // Permissões para CondominiumAdministrator
-            await CreateOrUpdateRoleAsync(roleManager, "CondominiumAdministrator", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = true,
-                CanReceiveMessages = true,
-                AllowedRecipientTypes = ["CondominiumAdministrator", "Resident", "Janitor"]
-            });
-
-            // Permissões para Resident
-            await CreateOrUpdateRoleAsync(roleManager, "Resident", new UserTypePermission
-            {
-                CanSendToIndividuals = false,
-                CanSendToGroups = false,
-                CanReceiveMessages = true,
-                AllowedRecipientTypes = ["SystemAdministrator", "CondominiumAdministrator"]
-            });
-
-            // Permissões para Janitor
-            await CreateOrUpdateRoleAsync(roleManager, "Janitor", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = true,
-                CanReceiveMessages = true,
-                AllowedRecipientTypes = ["SystemAdministrator", "CondominiumAdministrator", "Resident"]
-            });
-
-            // Permissões para Doorman
-            await CreateOrUpdateRoleAsync(roleManager, "Doorman", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = false,
-                CanReceiveMessages = true,
-                AllowedRecipientTypes = ["SystemAdministrator", "CondominiumAdministrator", "Resident"]
-            });
-
-            // Permissões para Cleaner
-            await CreateOrUpdateRoleAsync(roleManager, "Cleaner", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = false,
-                CanReceiveMessages = true,
-                AllowedRecipientTypes = ["CondominiumAdministrator", "Janitor", "CleaningManager"]
-            });
-
-            // Permissões para Security
-            await CreateOrUpdateRoleAsync(roleManager, "Security", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = true,
-                CanReceiveMessages = false,
-                AllowedRecipientTypes = ["CondominiumAdministrator", "Janitor"]
-            });
-
-            // Permissões para ServiceProvider
-            await CreateOrUpdateRoleAsync(roleManager, "ServiceProvider", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = true,
-                CanReceiveMessages = true,
-                AllowedRecipientTypes = ["CondominiumAdministrator", "Resident"]
-            });
-
-            // Permissões para ExternalProvider
-            await CreateOrUpdateRoleAsync(roleManager, "ExternalProvider", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = false,
-                CanReceiveMessages = false,
-                AllowedRecipientTypes = ["Resident"]
-            });
-
-            // Permissões para DeliveryPerson
-            await CreateOrUpdateRoleAsync(roleManager, "DeliveryPerson", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = false,
-                CanReceiveMessages = true,
-                AllowedRecipientTypes = ["Resident"]
-            });
-
-            // Permissões para CleaningManager
-            await CreateOrUpdateRoleAsync(roleManager, "CleaningManager", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = false,
-                CanReceiveMessages = true,
-                AllowedRecipientTypes = ["CondominiumAdministrator", "Janitor", "Cleaner"]
-            });
-
-            // Permissões para Visitor
-            await CreateOrUpdateRoleAsync(roleManager, "Visitor", new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = false,
-                CanReceiveMessages = false,
-                AllowedRecipientTypes = ["Resident"]
-            });
+                await CreateOrUpdateRoleAsync(roleManager, roleName, new UserTypePermission
+                {
+                    CanSendToIndividuals = permissions.CanSendToIndividuals,
+                    CanSendToGroups = permissions.CanSendToGroups,
+                    CanReceiveMessages = permissions.CanReceiveMessages,
+                    AllowedRecipientTypes = permissions.AllowedRecipientTypes.ToArray()
+                });
+            }
         }
 
         private static async Task CreateOrUpdateRoleAsync(RoleManager<IdentityRole<long>> roleManager,

@@ -35,7 +35,7 @@ namespace SmartCondoApi.Controllers
 
                 return Ok(userProfileResponseDTO);
             }
-            catch (InvalidPersonalTaxIDException ex)
+            catch (InvalidRegistrationNumberIDException ex)
             {
                 return BadRequest(new { ex.Message });
             }
@@ -126,55 +126,54 @@ namespace SmartCondoApi.Controllers
             }
         }
 
+        ////Obter todos os usuários
+        //[HttpGet]
+        //[Authorize]
+        //public async Task<IEnumerable<UserProfile>> Get()
+        //{
+        //    return await _dependencies.UserProfileService.Get();
+        //}
 
-        //Obter todos os usuários
-        [HttpGet]
-        [Authorize]
-        public async Task<IEnumerable<UserProfile>> Get()
-        {
-            return await _dependencies.UserProfileService.Get();
-        }
+        //// Obter um usuário por ID
+        //[HttpGet("{id}")]
+        //[Authorize]
+        //public async Task<ActionResult> GetUser(long id)
+        //{
+        //    try
+        //    {
+        //        var user = await _dependencies.UserProfileService.GetUser(id);
 
-        // Obter um usuário por ID
-        [HttpGet("{id}")]
-        [Authorize]
-        public async Task<ActionResult> GetUser(long id)
-        {
-            try
-            {
-                var user = await _dependencies.UserProfileService.GetUser(id);
+        //        return Ok(user);
+        //    }
+        //    catch (UserNotFoundException ex)
+        //    {
+        //        return NotFound(new { ex.Message });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { ex.Message });
+        //    }
+        //}
 
-                return Ok(user);
-            }
-            catch (UserNotFoundException ex)
-            {
-                return NotFound(new { ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { ex.Message });
-            }
-        }
+        ////Deletar um usuário por ID
+        //[HttpDelete("{id}")]
+        //[Authorize]
+        //public async Task<ActionResult> Delete(long id)
+        //{
+        //    try
+        //    {
+        //        await _dependencies.UserProfileService.Delete(id);
 
-        //Deletar um usuário por ID
-        [HttpDelete("{id}")]
-        [Authorize]
-        public async Task<ActionResult> Delete(long id)
-        {
-            try
-            {
-                await _dependencies.UserProfileService.Delete(id);
-
-                return Ok();
-            }
-            catch (UserNotFoundException ex)
-            {
-                return NotFound(new { ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { ex.Message });
-            }
-        }
+        //        return Ok();
+        //    }
+        //    catch (UserNotFoundException ex)
+        //    {
+        //        return NotFound(new { ex.Message });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { ex.Message });
+        //    }
+        //}
     }
 }

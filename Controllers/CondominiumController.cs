@@ -1,19 +1,37 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using SmartCondoApi.Dto;
 using SmartCondoApi.Models;
+using SmartCondoApi.Services.Condominium;
 
 namespace SmartCondoApi.Controllers
 {
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
-    public class CondominiumController(SmartCondoContext _context) : ControllerBase
+    [Authorize]
+    public class CondominiumController(ICondominiumService _condominiumService) : ControllerBase
     {
         [HttpGet]
-        [Authorize]
         public async Task<IEnumerable<Condominium>> Get()
         {
-            return await _context.Condominiums.ToListAsync();
+            return await _condominiumService.Get();
+        }
+
+        [HttpGet("{condominiumId}/users/search")]
+        public async Task<ActionResult> SearchUsers(
+            [FromRoute] int condominiumId,
+            [FromQuery] UserProfileSearchDTO searchDto)
+        {
+            try
+            {
+                var users = await _condominiumService.SearchUsers(condominiumId, searchDto);
+
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { ex.Message });
+            }
         }
     }
 }

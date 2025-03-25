@@ -479,7 +479,7 @@ namespace SmartCondoApi.Migrations
                     b.Property<int?>("CondominiumId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("FloorId")
+                    b.Property<int?>("FloorNumber")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -489,10 +489,6 @@ namespace SmartCondoApi.Migrations
                     b.Property<int?>("ParkingSpaceNumber")
                         .HasColumnType("integer");
 
-                    b.Property<string>("PersonalTaxID")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Phone1")
                         .IsRequired()
                         .HasColumnType("text");
@@ -500,10 +496,11 @@ namespace SmartCondoApi.Migrations
                     b.Property<string>("Phone2")
                         .HasColumnType("text");
 
-                    b.Property<int?>("TowerId")
-                        .HasColumnType("integer");
+                    b.Property<string>("RegistrationNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<int?>("TowerNumber")
+                    b.Property<int?>("TowerId")
                         .HasColumnType("integer");
 
                     b.Property<int>("UserTypeId")
@@ -513,7 +510,7 @@ namespace SmartCondoApi.Migrations
 
                     b.HasIndex("CondominiumId");
 
-                    b.HasIndex("PersonalTaxID")
+                    b.HasIndex("RegistrationNumber")
                         .IsUnique();
 
                     b.HasIndex("TowerId");

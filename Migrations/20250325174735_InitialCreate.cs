@@ -164,11 +164,10 @@ namespace SmartCondoApi.Migrations
                     Phone1 = table.Column<string>(type: "text", nullable: false),
                     Phone2 = table.Column<string>(type: "text", nullable: true),
                     UserTypeId = table.Column<int>(type: "integer", nullable: false),
-                    PersonalTaxID = table.Column<string>(type: "text", nullable: false),
+                    RegistrationNumber = table.Column<string>(type: "text", nullable: false),
                     CondominiumId = table.Column<int>(type: "integer", nullable: true),
-                    TowerNumber = table.Column<int>(type: "integer", nullable: true),
                     TowerId = table.Column<int>(type: "integer", nullable: true),
-                    FloorId = table.Column<int>(type: "integer", nullable: true),
+                    FloorNumber = table.Column<int>(type: "integer", nullable: true),
                     Apartment = table.Column<int>(type: "integer", nullable: true),
                     ParkingSpaceNumber = table.Column<int>(type: "integer", nullable: true)
                 },
@@ -543,9 +542,9 @@ namespace SmartCondoApi.Migrations
                 column: "CondominiumId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserProfiles_PersonalTaxID",
+                name: "IX_UserProfiles_RegistrationNumber",
                 table: "UserProfiles",
-                column: "PersonalTaxID",
+                column: "RegistrationNumber",
                 unique: true);
 
             migrationBuilder.CreateIndex(

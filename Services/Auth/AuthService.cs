@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
+using SmartCondoApi.Services.Permission;
 
 namespace SmartCondoApi.Services.Auth
 {
     public class AuthService(IAuthDependencies _dependencies) : IAuthService
     {
-        public async Task<string> Login([FromBody] Dictionary<string, string> body)
+        public async Task<LoginResponseDTO> Login([FromBody] Dictionary<string, string> body)
         {
             if (!body.TryGetValue("user", out string userText) || string.IsNullOrEmpty(userText))
             {
@@ -61,7 +63,34 @@ namespace SmartCondoApi.Services.Auth
                 throw new UserTypeNotFoundException("Tipo de Usuário não encontrado.");
             }
 
-            return GenerateToken(user, dbUserType.Name);
+            string role = dbUserType.Name;
+
+            return new LoginResponseDTO
+            {
+                Token = GenerateToken(user, dbUserType.Name),
+                User = new UserProfileDTO
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = userProfile.Name,
+                    Role = role,
+                    CondominiumId = userProfile.CondominiumId ?? 0,
+                    TowerId = userProfile.TowerId ?? 0,
+                    FloorId = userProfile.FloorNumber ?? 0,
+                    Apartment = userProfile.Apartment ?? 0,
+                    Permissions = GetPermissionsByRole(role)
+                },
+            };
+        }
+
+        private static UserPermissionsDTO GetPermissionsByRole(string role)
+        {
+            if (RolePermissions.Permissions.TryGetValue(role, out var permissions))
+            {
+                return permissions;
+            }
+
+            return new UserPermissionsDTO();
         }
 
         private string GenerateToken(Models.User user, string userType)

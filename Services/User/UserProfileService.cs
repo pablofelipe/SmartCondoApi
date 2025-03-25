@@ -11,10 +11,10 @@ namespace SmartCondoApi.Services.User
     {
         public async Task<UserProfileResponseDTO> AddUserAsync(UserProfileCreateDTO userCreateDTO)
         {
-            // Valida o CPF
-            if (!ValidateCPF(userCreateDTO.PersonalTaxId))
+            // Valida o CPF/CNPJ
+            if (!ValidateRegistrationNumber(userCreateDTO.RegistrationNumber))
             {
-                throw new InvalidPersonalTaxIDException("CPF inválido");
+                throw new InvalidRegistrationNumberIDException("CPF/CNPJ inválido");
             }
 
             if (null == userCreateDTO.User)
@@ -31,9 +31,9 @@ namespace SmartCondoApi.Services.User
 
             var context = _dependencies.Context;
 
-            if (context.UserProfiles.Any(u => u.PersonalTaxID == userCreateDTO.PersonalTaxId))
+            if (context.UserProfiles.Any(u => u.RegistrationNumber == userCreateDTO.RegistrationNumber))
             {
-                throw new UserAlreadyExistsException($"CPF {userCreateDTO.PersonalTaxId} já cadastrado");
+                throw new UserAlreadyExistsException($"CPF {userCreateDTO.RegistrationNumber} já cadastrado");
             }
 
             var userTypes = await _dependencies.Context.UserTypes.FirstOrDefaultAsync(ut => ut.Id == userCreateDTO.UserTypeId);
@@ -90,10 +90,10 @@ namespace SmartCondoApi.Services.User
                 Phone1 = userCreateDTO.Phone1,
                 Phone2 = userCreateDTO.Phone2,
                 UserTypeId = userCreateDTO.UserTypeId,
-                PersonalTaxID = userCreateDTO.PersonalTaxId,
+                RegistrationNumber = userCreateDTO.RegistrationNumber,
                 CondominiumId = userCreateDTO.CondominiumId,
-                TowerNumber = userCreateDTO.TowerNumber,
-                FloorId = userCreateDTO.FloorId,
+                TowerId = userCreateDTO.TowerId,
+                FloorNumber = userCreateDTO.FloorId,
                 Apartment = userCreateDTO.Apartment,
                 ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber,
                 User = user
@@ -123,9 +123,9 @@ namespace SmartCondoApi.Services.User
                 Name = userCreateDTO.Name,
                 Address = userCreateDTO.Address,
                 UserTypeId = userCreateDTO.UserTypeId,
-                PersonalTaxId = userCreateDTO.PersonalTaxId,
+                RegistrationNumber = userCreateDTO.RegistrationNumber,
                 CondominiumId = userCreateDTO.CondominiumId,
-                TowerNumber = userCreateDTO.TowerNumber,
+                TowerId = userCreateDTO.TowerId,
                 FloorId = userCreateDTO.FloorId,
                 Apartment = userCreateDTO.Apartment,
                 ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber,
@@ -139,7 +139,7 @@ namespace SmartCondoApi.Services.User
             return string.Compare(userTypeName, "SystemAdministrator", StringComparison.OrdinalIgnoreCase) == 0;
         }
 
-        private async Task ResidentValidations(UserProfileCreateDTO userCreateDTO, Condominium condo)
+        private async Task ResidentValidations(UserProfileCreateDTO userCreateDTO, Models.Condominium condo)
         {
             var context = _dependencies.Context;
 
@@ -158,11 +158,11 @@ namespace SmartCondoApi.Services.User
                 throw new InconsistentDataException($"Número de apartamento incorreto.");
             }
 
-            var tower = await context.Towers.FirstOrDefaultAsync(t => t.Number == userCreateDTO.TowerNumber && t.CondominiumId == condo.Id);
+            var tower = await context.Towers.FirstOrDefaultAsync(t => t.Id == userCreateDTO.TowerId && t.CondominiumId == condo.Id);
 
             if (null == tower)
             {
-                throw new ArgumentException($"Torre {userCreateDTO.TowerNumber} não encontrada");
+                throw new ArgumentException($"Torre {userCreateDTO.TowerId} não encontrada");
             }
 
             if (userCreateDTO.FloorId > tower.FloorCount)
@@ -194,9 +194,9 @@ namespace SmartCondoApi.Services.User
             }
         }
 
-        private static bool ValidateCPF(string personalTaxID)
+        private static bool ValidateRegistrationNumber(string registrationNumber)
         {
-            return new IndividualTaxpayerRegistryHandler().Verify(personalTaxID);
+            return new RegistrationNumberValidator().Verify(registrationNumber);
         }
 
         public async Task<UserProfileResponseDTO> UpdateUserAsync(long userId, UserProfileUpdateDTO userUpdateDTO)
@@ -219,8 +219,8 @@ namespace SmartCondoApi.Services.User
             if (userUpdateDTO.Address != null) user.Address = userUpdateDTO.Address;
 
             if (userUpdateDTO.CondominiumId.HasValue) user.CondominiumId = userUpdateDTO.CondominiumId.Value;
-            if (userUpdateDTO.TowerNumber.HasValue) user.TowerNumber = userUpdateDTO.TowerNumber.Value;
-            if (userUpdateDTO.FloorId.HasValue) user.FloorId = userUpdateDTO.FloorId.Value;
+            if (userUpdateDTO.TowerId.HasValue) user.TowerId = userUpdateDTO.TowerId.Value;
+            if (userUpdateDTO.FloorId.HasValue) user.FloorNumber = userUpdateDTO.FloorId.Value;
             if (userUpdateDTO.Apartment.HasValue) user.Apartment = userUpdateDTO.Apartment.Value;
 
             // Atualiza os dados do Login, se fornecido
@@ -237,10 +237,10 @@ namespace SmartCondoApi.Services.User
             {
                 Name = user.Name,
                 Address = user.Address,
-                PersonalTaxId = user.PersonalTaxID,
+                RegistrationNumber = user.RegistrationNumber,
                 CondominiumId = user.CondominiumId,
-                TowerNumber = user.TowerNumber,
-                FloorId = user.FloorId,
+                TowerId = user.TowerId,
+                FloorId = user.FloorNumber,
                 Apartment = user.Apartment
             };
         }

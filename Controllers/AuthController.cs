@@ -15,9 +15,9 @@ namespace SmartCondoApi.Controllers
         {
             try
             {
-                var token = await _userService.Login(body);
+                var user = await _userService.Login(body);
 
-                return Ok(new { token });
+                return Ok(user);
             }
             catch (InvalidCredentialsException ex)
             {

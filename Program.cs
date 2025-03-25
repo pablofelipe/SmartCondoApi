@@ -11,6 +11,7 @@ using SmartCondoApi.Controllers;
 using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services.Auth;
+using SmartCondoApi.Services.Condominium;
 using SmartCondoApi.Services.Email;
 using SmartCondoApi.Services.LinkGenerator;
 using SmartCondoApi.Services.Message;
@@ -97,6 +98,8 @@ builder.Services.AddScoped<IUserProfileControllerDependencies>(provider =>
 
     return new UserProfileControllerDependencies(userProfileService, linkGeneratorService, emailService, emailConfService);
 });
+
+builder.Services.AddScoped<ICondominiumService, CondominiumService>();
 
 builder.Services.AddAuthorization();
 

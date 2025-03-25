@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SmartCondoApi.Dto;
 
 namespace SmartCondoApi.Services.Auth
 {
     public interface IAuthService
     {
-        Task<string> Login([FromBody] Dictionary<string, string> body);
+        Task<LoginResponseDTO> Login([FromBody] Dictionary<string, string> body);
     }
 }

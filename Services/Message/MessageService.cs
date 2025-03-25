@@ -214,12 +214,11 @@ namespace SmartCondoApi.Services.Message
 
                 if (messageDto.Scope >= MessageScope.Tower && messageDto.TowerId.HasValue)
                 {
-                    //query = query.Where(u => u.TowerId == messageDto.TowerId);
-                    query = query.Where(u => u.TowerNumber == messageDto.TowerId);
+                    query = query.Where(u => u.TowerId == messageDto.TowerId);
 
                     if (messageDto.Scope >= MessageScope.Floor && messageDto.FloorId.HasValue)
                     {
-                        query = query.Where(u => u.FloorId == messageDto.FloorId);
+                        query = query.Where(u => u.FloorNumber == messageDto.FloorId);
                     }
                 }
             }
