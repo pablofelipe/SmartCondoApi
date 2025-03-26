@@ -18,7 +18,7 @@ namespace SmartCondoApi.Infra
             if (!File.Exists(keyPath) || !File.Exists(ivPath))
             {
                 using TripleDES tripleDES = TripleDES.Create();
-                
+
                 tripleDES.GenerateKey();
                 tripleDES.GenerateIV();
 

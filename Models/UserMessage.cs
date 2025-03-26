@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace SmartCondoApi.Models
+﻿namespace SmartCondoApi.Models
 {
     public class UserMessage
     {

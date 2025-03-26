@@ -2,7 +2,6 @@
 {
     public static class UserTypeRoles
     {
-        // Grupos de tipos para facilitar as verificações
         public static readonly string[] SystemAdmins = { "SystemAdministrator" };
         public static readonly string[] CondoAdmins = { "CondominiumAdministrator", "ResidentCommitteeMember" };
         public static readonly string[] Employees = { "Janitor", "Doorman", "Cleaner", "Security", "CleaningManager", "ITSupport" };

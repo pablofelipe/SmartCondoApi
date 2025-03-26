@@ -9,6 +9,6 @@ namespace SmartCondoApi.Controllers
         IUserProfileService UserProfileService { get; }
         ILinkGeneratorService LinkGeneratorService { get; }
         IEmailService EmailService { get; }
-        IEmailConfirmationService EmailConfirmationService { get;  }
+        IEmailConfirmationService EmailConfirmationService { get; }
     }
 }

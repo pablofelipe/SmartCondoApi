@@ -44,7 +44,7 @@ namespace SmartCondoApi.Controllers
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { ex.Message } );
+                return BadRequest(new { ex.Message });
             }
             catch (Exception ex)
             {

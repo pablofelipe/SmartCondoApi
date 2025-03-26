@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SmartCondoApi.Exceptions;
-using System.Net;
 
 namespace SmartCondoApi.Services.Email
 {

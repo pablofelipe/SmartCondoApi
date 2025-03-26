@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SmartCondoApi.Dto;
 using SmartCondoApi.Models.Permissions;
 using System.Security.Claims;
-using SmartCondoApi.Services.Permission;
 
 namespace SmartCondoApi.Models
 {
@@ -11,7 +11,7 @@ namespace SmartCondoApi.Models
     {
         public SmartCondoContext()
         {
-            
+
         }
 
         public SmartCondoContext(DbContextOptions<SmartCondoContext> options)
@@ -35,7 +35,7 @@ namespace SmartCondoApi.Models
 
         public DbSet<Vehicle> Vehicles { get; set; }
 
-        public DbSet<Message> Messages{ get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         public DbSet<UserMessage> UserMessages { get; set; }
 
@@ -54,7 +54,8 @@ namespace SmartCondoApi.Models
                 .HasOne(u => u.UserType)
                 .WithMany()
                 .HasForeignKey(u => u.UserTypeId)
-                .IsRequired();
+                .IsRequired()
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<UserProfile>()
                 .HasOne(e => e.Condominium)
@@ -145,18 +146,18 @@ namespace SmartCondoApi.Models
         {
             foreach (var (roleName, permissions) in RolePermissions.Permissions)
             {
-                await CreateOrUpdateRoleAsync(roleManager, roleName, new UserTypePermission
+                await CreateOrUpdateRoleAsync(roleManager, roleName, new UserPermissionsDTO
                 {
                     CanSendToIndividuals = permissions.CanSendToIndividuals,
                     CanSendToGroups = permissions.CanSendToGroups,
                     CanReceiveMessages = permissions.CanReceiveMessages,
-                    AllowedRecipientTypes = permissions.AllowedRecipientTypes.ToArray()
+                    AllowedRecipientTypes = permissions.AllowedRecipientTypes
                 });
             }
         }
 
         private static async Task CreateOrUpdateRoleAsync(RoleManager<IdentityRole<long>> roleManager,
-            string roleName, UserTypePermission permission)
+            string roleName, UserPermissionsDTO permission)
         {
             var role = await roleManager.FindByNameAsync(roleName);
             if (role == null)

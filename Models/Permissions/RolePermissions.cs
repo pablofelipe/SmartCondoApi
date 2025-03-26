@@ -1,6 +1,6 @@
 ﻿using SmartCondoApi.Dto;
 
-namespace SmartCondoApi.Services.Permission
+namespace SmartCondoApi.Models.Permissions
 {
     public static class RolePermissions
     {

@@ -68,7 +68,7 @@ namespace SmartCondoApi.Services.User
                                  Login = users
                              }).Count();
 
-                if (count > condo.MaxUsers-1)
+                if (count > condo.MaxUsers - 1)
                 {
                     throw new UsersExceedException("O número máximo de usuários permitidos para este condomínio foi atingido. Entre em contato com o administrador para mais informações.");
                 }
@@ -202,15 +202,15 @@ namespace SmartCondoApi.Services.User
 
             //Regra para 1 apartamento por vaga.
             var usersParkingSpaceNumber = (from profiles in context.UserProfiles
-                         join users in context.Users on profiles.Id equals users.Id
-                         where users.Enabled == true 
-                         && profiles.CondominiumId == userCreateDTO.CondominiumId
-                         && profiles.ParkingSpaceNumber == userCreateDTO.ParkingSpaceNumber
-                         && profiles.Apartment != userCreateDTO.Apartment
-                         select new
-                         {
-                             User = profiles
-                         }).ToList();
+                                           join users in context.Users on profiles.Id equals users.Id
+                                           where users.Enabled == true
+                                           && profiles.CondominiumId == userCreateDTO.CondominiumId
+                                           && profiles.ParkingSpaceNumber == userCreateDTO.ParkingSpaceNumber
+                                           && profiles.Apartment != userCreateDTO.Apartment
+                                           select new
+                                           {
+                                               User = profiles
+                                           }).ToList();
 
             if (null != usersParkingSpaceNumber && usersParkingSpaceNumber.Count > 0)
             {

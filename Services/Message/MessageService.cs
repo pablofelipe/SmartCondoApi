@@ -10,47 +10,7 @@ namespace SmartCondoApi.Services.Message
     {
         private readonly SmartCondoContext _context = context;
 
-        // Cache de permissões (pode ser carregado do banco ou configurado aqui)
-        private readonly Dictionary<string, UserTypePermission> _permissions = new()
-        {
-            ["SystemAdministrator"] = new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = true,
-                AllowedRecipientTypes = UserTypeRoles.SystemAdmins
-                    .Concat(UserTypeRoles.CondoAdmins)
-                    .Concat(UserTypeRoles.Employees)
-                    .Concat(UserTypeRoles.Residents)
-                    .Concat(UserTypeRoles.ServiceProviders)
-                    .ToArray(),
-                CanReceiveMessages = true
-            },
-            ["CondominiumAdministrator"] = new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = true,
-                AllowedRecipientTypes = UserTypeRoles.CondoAdmins
-                    .Concat(UserTypeRoles.Employees)
-                    .Concat(UserTypeRoles.Residents)
-                    .ToArray(),
-                CanReceiveMessages = true
-            },
-            ["Resident"] = new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = false,
-                AllowedRecipientTypes = UserTypeRoles.CondoAdmins,
-                CanReceiveMessages = true
-            },
-            ["Janitor"] = new UserTypePermission
-            {
-                CanSendToIndividuals = true,
-                CanSendToGroups = true,
-                AllowedRecipientTypes = UserTypeRoles.Residents,
-                CanReceiveMessages = true
-            },
-            // Adicione as outras permissões conforme necessário
-        };
+        private readonly Dictionary<string, UserPermissionsDTO> _permissions = RolePermissions.Permissions;
 
         private async Task<UserProfile> GetSenderWithValidationAsync(long senderId)
         {
@@ -142,7 +102,7 @@ namespace SmartCondoApi.Services.Message
             return message;
         }
 
-        private bool ValidateSenderPermissions(UserProfile sender, MessageCreateDto messageDto, UserTypePermission senderPermissions)
+        private bool ValidateSenderPermissions(UserProfile sender, MessageCreateDto messageDto, UserPermissionsDTO senderPermissions)
         {
             // Verificar se pode enviar mensagens individuais/grupo
             if (messageDto.Scope == MessageScope.Individual && !senderPermissions.CanSendToIndividuals)
@@ -168,7 +128,7 @@ namespace SmartCondoApi.Services.Message
             return true;
         }
 
-        private async Task<List<UserProfile>> DetermineRecipients(MessageCreateDto messageDto, UserProfile sender, UserTypePermission senderPermissions)
+        private async Task<List<UserProfile>> DetermineRecipients(MessageCreateDto messageDto, UserProfile sender, UserPermissionsDTO senderPermissions)
         {
             IQueryable<UserProfile> query = _context.UserProfiles
                 .Include(u => u.UserType)

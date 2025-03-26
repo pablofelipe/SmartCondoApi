@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
-using SmartCondoApi.Models;
 
 namespace SmartCondoApi.Controllers
 {

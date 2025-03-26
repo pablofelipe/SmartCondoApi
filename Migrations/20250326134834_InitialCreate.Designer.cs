@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250325174735_InitialCreate")]
+    [Migration("20250326134834_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -765,7 +765,7 @@ namespace SmartCondoApi.Migrations
                     b.HasOne("SmartCondoApi.Models.UserType", "UserType")
                         .WithMany()
                         .HasForeignKey("UserTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Condominium");

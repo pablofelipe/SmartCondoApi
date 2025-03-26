@@ -2,7 +2,6 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -15,9 +14,8 @@ using SmartCondoApi.Services.Condominium;
 using SmartCondoApi.Services.Email;
 using SmartCondoApi.Services.LinkGenerator;
 using SmartCondoApi.Services.Message;
-using SmartCondoApi.Services.Permission;
+using SmartCondoApi.Services.Permissions;
 using SmartCondoApi.Services.User;
-using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -79,7 +77,8 @@ builder.Services.AddScoped<IUserProfileService>(provider =>
 
 builder.Services.AddScoped<ILinkGeneratorService, LinkGeneratorService>();
 
-builder.Services.AddScoped<IEmailService>(email => {
+builder.Services.AddScoped<IEmailService>(email =>
+{
     var configuration = email.GetRequiredService<IConfiguration>();
     return new EmailService(configuration);
 });
@@ -108,18 +107,18 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
-options.SwaggerDoc("v1", new OpenApiInfo { Title = "API com JWT", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "API com JWT", Version = "v1" });
 
-options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-{
-    Description = "Insira o token JWT no formato: Bearer {token}",
-    Name = "Authorization",
-    In = ParameterLocation.Header,
-    Type = SecuritySchemeType.ApiKey,
-    Scheme = "Bearer"
-});
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Insira o token JWT no formato: Bearer {token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
 
-options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -143,7 +142,7 @@ builder.Services.AddCors(options =>
             builder.AllowAnyOrigin()
                    .AllowAnyMethod()
                    .AllowAnyHeader();
-    });
+        });
     options.AddPolicy("ProductionCorsPolicy", policy =>
     {
         // Permitir origens específicas
@@ -166,7 +165,7 @@ builder.Services.AddMemoryCache(options =>
     options.SizeLimit = 1024; // Limite de tamanho em MB
 });
 
-builder.Services.AddScoped<PermissionService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
 
 builder.Services.AddScoped<IMessageService, MessageService>();
 

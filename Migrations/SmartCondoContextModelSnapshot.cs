@@ -762,7 +762,7 @@ namespace SmartCondoApi.Migrations
                     b.HasOne("SmartCondoApi.Models.UserType", "UserType")
                         .WithMany()
                         .HasForeignKey("UserTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Condominium");

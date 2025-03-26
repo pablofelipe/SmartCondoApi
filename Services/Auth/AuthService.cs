@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
-using SmartCondoApi.Services.Permission;
+using SmartCondoApi.Models.Permissions;
 
 namespace SmartCondoApi.Services.Auth
 {

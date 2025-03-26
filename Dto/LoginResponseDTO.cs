@@ -26,7 +26,7 @@
         public bool CanSendToIndividuals { get; set; }
         public bool CanSendToGroups { get; set; }
         public bool CanReceiveMessages { get; set; }
-        public bool CanRegisterUsers {get; set;}
+        public bool CanRegisterUsers { get; set; }
         public List<string> AllowedRecipientTypes { get; set; } // Tipos de usuários permitidos
     }
 }
