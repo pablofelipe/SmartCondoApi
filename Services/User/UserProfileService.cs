@@ -47,8 +47,10 @@ namespace SmartCondoApi.Services.User
 
             if (null == condo)
             {
-                if (await SystemAdmin(userTypes.Name) == false)
+                if (IsSystemAdmin(userTypes.Name) == false)
                     throw new ArgumentException($"Condominio {userCreateDTO.CondominiumId} não encontrado");
+
+                SystemAdministrationValidations(userCreateDTO, userTypes, condo);
             }
             else
             {
@@ -71,7 +73,9 @@ namespace SmartCondoApi.Services.User
                     throw new UsersExceedException("O número máximo de usuários permitidos para este condomínio foi atingido. Entre em contato com o administrador para mais informações.");
                 }
 
-                await ResidentValidations(userCreateDTO, condo);
+                await ResidentValidations(userCreateDTO, userTypes, condo);
+
+                NonResidentValidations(userCreateDTO, userTypes);
             }
 
             var user = new Models.User
@@ -82,6 +86,8 @@ namespace SmartCondoApi.Services.User
                 LockoutEnabled = true,
                 TwoFactorEnabled = true
             };
+
+            user.PasswordHash = _dependencies.UserManager.PasswordHasher.HashPassword(user, userCreateDTO.User.Password);
 
             var userProfile = new UserProfile
             {
@@ -98,6 +104,7 @@ namespace SmartCondoApi.Services.User
                 ParkingSpaceNumber = userCreateDTO.ParkingSpaceNumber,
                 User = user
             };
+
 
             await context.UserProfiles.AddAsync(userProfile);
             await context.Users.AddAsync(user);
@@ -134,29 +141,52 @@ namespace SmartCondoApi.Services.User
             };
         }
 
-        private async Task<bool> SystemAdmin(string userTypeName)
+        private static void NonResidentValidations(UserProfileCreateDTO userCreateDTO, UserType currentUserType)
+        {
+
+            if (IsResident(currentUserType.Name))
+                return;
+
+            userCreateDTO.FloorId = null;
+            userCreateDTO.Apartment = null;
+            userCreateDTO.ParkingSpaceNumber = null;
+            userCreateDTO.TowerId = null;
+        }
+
+        private static void SystemAdministrationValidations(UserProfileCreateDTO userCreateDTO, UserType currentUserType, Models.Condominium condo)
+        {
+
+            if (!IsSystemAdmin(currentUserType.Name))
+                return;
+
+            userCreateDTO.FloorId = null;
+            userCreateDTO.Apartment = null;
+            userCreateDTO.ParkingSpaceNumber = null;
+            userCreateDTO.TowerId = null;
+        }
+
+        private static bool IsSystemAdmin(string userTypeName)
         {
             return string.Compare(userTypeName, "SystemAdministrator", StringComparison.OrdinalIgnoreCase) == 0;
         }
 
-        private async Task ResidentValidations(UserProfileCreateDTO userCreateDTO, Models.Condominium condo)
+        private static bool IsResident(string userTypeName)
         {
-            var context = _dependencies.Context;
+            return string.Compare(userTypeName, "Resident", StringComparison.OrdinalIgnoreCase) == 0;
+        }
 
-            var userTypes = await context.UserTypes.FirstOrDefaultAsync(ut => ut.Id == userCreateDTO.UserTypeId);
+        private async Task ResidentValidations(UserProfileCreateDTO userCreateDTO, UserType currentUserType, Models.Condominium condo)
+        {
 
-            if (null == userTypes)
-            {
-                throw new ArgumentException($"Tipo de usuário {userCreateDTO.UserTypeId} não encontrado");
-            }
-
-            if (string.Compare(userTypes.Name, "Resident", StringComparison.OrdinalIgnoreCase) != 0)
+            if (!IsResident(currentUserType.Name))
                 return;
 
-            if (userCreateDTO.Apartment == 0)
+            if (userCreateDTO.Apartment <= 0)
             {
                 throw new InconsistentDataException($"Número de apartamento incorreto.");
             }
+
+            var context = _dependencies.Context;
 
             var tower = await context.Towers.FirstOrDefaultAsync(t => t.Id == userCreateDTO.TowerId && t.CondominiumId == condo.Id);
 
