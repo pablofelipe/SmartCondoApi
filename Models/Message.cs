@@ -17,11 +17,12 @@ namespace SmartCondoApi.Models
         public string Content { get; set; }
         public DateTime SentDate { get; set; }
 
-        public MessageScope Scope { get; set; } // Enum: Individual, Condominium, Tower, Floor
+        public int Scope { get; set; } // Enum: Individual, Condominium, Tower, Floor
         //Relacionamento com Users(quem enviou).
         public long SenderId { get; set; }
 
         [ForeignKey("SenderId")]
+        [JsonIgnore]
         public UserProfile Sender { get; set; }
 
         public int CondominiumId { get; set; }
@@ -33,7 +34,9 @@ namespace SmartCondoApi.Models
         public int? FloorId { get; set; }
 
         //Mensagem para outro usuário do sistema
-        public long? RecipientId { get; set; }
+        public long? RecipientUserId { get; set; }
+
+        [JsonIgnore]
         public UserProfile RecipientUser { get; set; }
 
         [JsonIgnore]

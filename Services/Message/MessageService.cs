@@ -10,7 +10,7 @@ namespace SmartCondoApi.Services.Message
     {
         private readonly SmartCondoContext _context = context;
 
-        private readonly Dictionary<string, UserPermissionsDTO> _permissions = RolePermissions.Permissions;
+        private readonly Dictionary<string, UserPermissionsDTO> _permissions = RolePermissions.GetPermissions();
 
         private async Task<UserProfile> GetSenderWithValidationAsync(long senderId)
         {
@@ -19,10 +19,15 @@ namespace SmartCondoApi.Services.Message
                 .FirstOrDefaultAsync(u => u.Id == senderId);
 
             if (sender == null)
-                throw new ArgumentException("Sender not found");
+                throw new ArgumentException("Usuário não encontrado");
 
-            if (sender.CondominiumId == null && !UserTypeRoles.IsSystemAdmin(sender.UserType.Name))
-                throw new InvalidOperationException("Sender must be associated with a condominium");
+            var userType = await _context.UserTypes.FirstOrDefaultAsync(ut => ut.Id == sender.UserTypeId);
+
+            if (userType == null)
+                throw new ArgumentException("Tipo de usuário não encontrado");
+
+            if (sender.CondominiumId == null && !UserTypeRoles.IsSystemAdmin(userType.Name))
+                throw new InvalidOperationException("Usuário não está associado ao condomínio");
 
             return sender;
         }
@@ -71,11 +76,11 @@ namespace SmartCondoApi.Services.Message
                 Content = messageDto.Content,
                 SentDate = DateTime.UtcNow,
                 SenderId = senderId,
-                Scope = messageDto.Scope,
+                Scope = (int)messageDto.Scope,
                 CondominiumId = condominiumId,
                 TowerId = messageDto.TowerId,
                 FloorId = messageDto.FloorId,
-                RecipientId = messageDto.RecipientId
+                RecipientUserId = messageDto.RecipientUserId
             };
 
             _context.Messages.Add(message);
@@ -112,7 +117,7 @@ namespace SmartCondoApi.Services.Message
                 return false;
 
             // Verificar destinatário individual
-            if (messageDto.Scope == MessageScope.Individual && messageDto.RecipientId.HasValue)
+            if (messageDto.Scope == MessageScope.Individual && messageDto.RecipientUserId.HasValue)
             {
                 // Verificação adicional será feita em DetermineRecipients
                 return true;
@@ -135,17 +140,22 @@ namespace SmartCondoApi.Services.Message
                 .AsQueryable();
 
             // Mensagem individual
-            if (messageDto.Scope == MessageScope.Individual && messageDto.RecipientId.HasValue)
+            if (messageDto.Scope == MessageScope.Individual && messageDto.RecipientUserId.HasValue)
             {
-                var recipient = await query.FirstOrDefaultAsync(u => u.Id == messageDto.RecipientId.Value);
+                var recipient = await query.FirstOrDefaultAsync(u => u.Id == messageDto.RecipientUserId.Value);
 
                 if (recipient == null)
                 {
-                    Log.Warning("Recipient not found with ID {RecipientId}", messageDto.RecipientId.Value);
+                    Log.Warning("Recipient not found with ID {RecipientId}", messageDto.RecipientUserId.Value);
                     return [];
                 }
 
-                if (!recipient.User.Enabled)
+                var userRecipient = await _context.Users.FirstOrDefaultAsync(ur => ur.Id == recipient.Id);
+
+                if (userRecipient == null)
+                    throw new InvalidOperationException("Login de usuario não identificado");
+
+                if (!userRecipient.Enabled)
                     throw new InvalidOperationException("Cannot send message to disabled user");
 
                 // Verificar se o tipo do destinatário é permitido
@@ -229,7 +239,7 @@ namespace SmartCondoApi.Services.Message
                     SenderId = um.Message.SenderId,
                     SenderName = um.Message.Sender.User.UserName,
                     SenderType = um.Message.Sender.UserType.Name,
-                    RecipientId = um.Message.RecipientId,
+                    RecipientUserId = um.Message.RecipientUserId,
                     RecipientName = um.Message.RecipientUser != null ? um.Message.RecipientUser.User.UserName : null,
                     CondominiumId = um.Message.CondominiumId,
                     CondominiumName = um.Message.Condominium.Name,
@@ -263,7 +273,7 @@ namespace SmartCondoApi.Services.Message
                     SenderId = m.SenderId,
                     SenderName = m.Sender.User.UserName,
                     SenderType = m.Sender.UserType.Name,
-                    RecipientId = m.RecipientId,
+                    RecipientUserId = m.RecipientUserId,
                     RecipientName = m.RecipientUser != null ? m.RecipientUser.User.UserName : null,
                     CondominiumId = m.CondominiumId,
                     CondominiumName = m.Condominium.Name,
@@ -304,7 +314,7 @@ namespace SmartCondoApi.Services.Message
                     SenderId = m.SenderId,
                     SenderName = m.Sender.User.UserName,
                     SenderType = m.Sender.UserType.Name,
-                    RecipientId = m.RecipientId,
+                    RecipientUserId = m.RecipientUserId,
                     RecipientName = m.RecipientUser != null ? m.RecipientUser.User.UserName : null,
                     CondominiumId = m.CondominiumId,
                     CondominiumName = m.Condominium.Name,

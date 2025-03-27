@@ -9,7 +9,7 @@ namespace SmartCondoApi.Dto
         public DateTime SentDate { get; set; }
         public bool IsRead { get; set; }
         public DateTime? ReadDate { get; set; }
-        public MessageScope Scope { get; set; }
+        public int Scope { get; set; }
 
         // Informações do remetente
         public long SenderId { get; set; }
@@ -17,7 +17,7 @@ namespace SmartCondoApi.Dto
         public string SenderType { get; set; }
 
         // Informações do destinatário (para mensagens individuais)
-        public long? RecipientId { get; set; }
+        public long? RecipientUserId { get; set; }
         public string RecipientName { get; set; }
 
         // Informações de localização

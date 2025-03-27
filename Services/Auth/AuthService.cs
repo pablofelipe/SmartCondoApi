@@ -85,7 +85,9 @@ namespace SmartCondoApi.Services.Auth
 
         private static UserPermissionsDTO GetPermissionsByRole(string role)
         {
-            if (RolePermissions.Permissions.TryGetValue(role, out var permissions))
+            var rolePermissions = RolePermissions.GetPermissions();
+
+            if (rolePermissions.TryGetValue(role, out var permissions))
             {
                 return permissions;
             }

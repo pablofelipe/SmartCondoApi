@@ -142,17 +142,14 @@ namespace SmartCondoApi.Models
 
             base.OnModelCreating(modelBuilder);
         }
+
         public static async Task SeedPermissionsAsync(RoleManager<IdentityRole<long>> roleManager)
         {
-            foreach (var (roleName, permissions) in RolePermissions.Permissions)
+            var rolePermissions = RolePermissions.GetPermissions();
+
+            foreach (var rolePermission in rolePermissions)
             {
-                await CreateOrUpdateRoleAsync(roleManager, roleName, new UserPermissionsDTO
-                {
-                    CanSendToIndividuals = permissions.CanSendToIndividuals,
-                    CanSendToGroups = permissions.CanSendToGroups,
-                    CanReceiveMessages = permissions.CanReceiveMessages,
-                    AllowedRecipientTypes = permissions.AllowedRecipientTypes
-                });
+                await CreateOrUpdateRoleAsync(roleManager, rolePermission.Key, rolePermission.Value);
             }
         }
 
@@ -166,22 +163,19 @@ namespace SmartCondoApi.Models
                 await roleManager.CreateAsync(role);
             }
 
-            // Remove todas as claims existentes primeiro
             var existingClaims = await roleManager.GetClaimsAsync(role);
             foreach (var claim in existingClaims)
             {
                 await roleManager.RemoveClaimAsync(role, claim);
             }
 
-            // Adiciona as novas claims
-            if (permission.CanSendToIndividuals)
-                await roleManager.AddClaimAsync(role, new Claim("Permission", "CanSendToIndividuals"));
+            foreach (var property in permission.GetType().GetProperties())
+            {
+                var value = property.GetValue(permission);
 
-            if (permission.CanSendToGroups)
-                await roleManager.AddClaimAsync(role, new Claim("Permission", "CanSendToGroups"));
-
-            if (permission.CanReceiveMessages)
-                await roleManager.AddClaimAsync(role, new Claim("Permission", "CanReceiveMessages"));
+                if (value != null && bool.TryParse(value.ToString(), out bool bValue) && bValue)
+                    await roleManager.AddClaimAsync(role, new Claim("Permission", property.Name));
+            }
 
             foreach (var allowedType in permission.AllowedRecipientTypes)
             {

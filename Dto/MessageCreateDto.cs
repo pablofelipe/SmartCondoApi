@@ -12,16 +12,16 @@ namespace SmartCondoApi.Dto
         [Required]
         public MessageScope Scope { get; set; }
 
-        public long? RecipientId { get; set; }
+        public long? RecipientUserId { get; set; }
         public int? CondominiumId { get; set; }
         public int? TowerId { get; set; }
         public int? FloorId { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (Scope == MessageScope.Individual && !RecipientId.HasValue)
+            if (Scope == MessageScope.Individual && !RecipientUserId.HasValue)
             {
-                yield return new ValidationResult("RecipientId is required for individual messages", [nameof(RecipientId)]);
+                yield return new ValidationResult("RecipientId is required for individual messages", [nameof(RecipientUserId)]);
             }
 
             // Se for mensagem para grupo e não especificou condomínio

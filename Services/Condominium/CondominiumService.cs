@@ -24,11 +24,15 @@ namespace SmartCondoApi.Services.Condominium
                 throw new InconsistentDataException("Nome ou CPF/CNPJ devem ser informados");
             }
 
-            var query = _context.UserProfiles.Where(u => u.CondominiumId == condominiumId && null != u.User && u.User.Enabled == true);
+            var query = _context.UserProfiles.Where(u => 
+                        u.CondominiumId == condominiumId 
+                        && null != u.User 
+                        && u.User.Enabled == true
+                        && u.UserTypeId == searchDto.Type);
 
             if (!string.IsNullOrEmpty(searchDto.Name))
             {
-                query = query.Where(u => EF.Functions.Like(u.Name, $"%{searchDto.Name}%"));
+                query = query.Where(u => EF.Functions.Like(u.Name.ToLower(), $"%{searchDto.Name.ToLower()}%"));
             }
 
             if (!string.IsNullOrEmpty(searchDto.RegistrationNumber))

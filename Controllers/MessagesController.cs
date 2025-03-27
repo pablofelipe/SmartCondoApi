@@ -31,6 +31,7 @@ namespace SmartCondoApi.Controllers
             try
             {
                 var message = await _messageService.SendMessageAsync(messageDto, userProfile.Id);
+
                 return Ok(message);
             }
             catch (UnauthorizedAccessException ex)

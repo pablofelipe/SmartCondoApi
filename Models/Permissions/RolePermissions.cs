@@ -4,7 +4,22 @@ namespace SmartCondoApi.Models.Permissions
 {
     public static class RolePermissions
     {
-        public static readonly Dictionary<string, UserPermissionsDTO> Permissions = new()
+        public static Dictionary<string, UserPermissionsDTO> GetPermissions()
+        {
+            var rawPermissions = RawPermissions;
+
+            foreach (var permission in rawPermissions)
+            {
+                var userPermission = permission.Value;
+
+                userPermission.CanSendMessages = userPermission.CanSendToIndividuals || userPermission.CanSendToGroups;
+                userPermission.CanRegisterVehicles = userPermission.CanRegisterUsers;
+            }
+
+            return rawPermissions;
+        }
+
+        private static readonly Dictionary<string, UserPermissionsDTO> RawPermissions = new()
         {
             ["SystemAdministrator"] = new UserPermissionsDTO
             {
@@ -67,7 +82,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToIndividuals = true,
                 CanSendToGroups = true,
                 CanReceiveMessages = true,
-                CanRegisterUsers = true,
+                CanRegisterUsers = false,
                 AllowedRecipientTypes = ["CondominiumAdministrator", "Resident"]
             },
             ["ExternalProvider"] = new UserPermissionsDTO
@@ -96,11 +111,11 @@ namespace SmartCondoApi.Models.Permissions
             },
             ["Visitor"] = new UserPermissionsDTO
             {
-                CanSendToIndividuals = true,
+                CanSendToIndividuals = false,
                 CanSendToGroups = false,
                 CanReceiveMessages = false,
                 CanRegisterUsers = false,
-                AllowedRecipientTypes = ["Resident"]
+                AllowedRecipientTypes = []
             },
             ["ResidentCommitteeMember"] = new UserPermissionsDTO
             {

@@ -1,4 +1,6 @@
-﻿namespace SmartCondoApi.Models
+﻿using System.Text.Json.Serialization;
+
+namespace SmartCondoApi.Models
 {
     public class Condominium
     {
@@ -9,12 +11,16 @@
         public bool Enabled { get; set; }
         public int MaxUsers { get; set; }
 
+        [JsonIgnore]
         public ICollection<Tower> Towers { get; set; }
 
+        [JsonIgnore]
         public ICollection<UserProfile> Users { get; set; }
 
+        [JsonIgnore]
         public ICollection<Service> Services { get; set; }
 
+        [JsonIgnore]
         public ICollection<Message> Messages { get; set; }
 
     }
