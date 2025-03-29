@@ -1,13 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Amazon.Runtime.Internal;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartCondoApi.Dto;
 using SmartCondoApi.Exceptions;
+using SmartCondoApi.Infra;
 using SmartCondoApi.Models.Permissions;
 
 namespace SmartCondoApi.Services.Auth
 {
     public class AuthService(IAuthDependencies _dependencies) : IAuthService
     {
+        private static CryptoKeyDTO _cryptoKeyDTO = null;
+
+        private static readonly object _keyLock = new();
+
         public async Task<LoginResponseDTO> Login([FromBody] Dictionary<string, string> body)
         {
             if (!body.TryGetValue("user", out string userText) || string.IsNullOrEmpty(userText))
@@ -18,6 +24,18 @@ namespace SmartCondoApi.Services.Auth
             if (!body.TryGetValue("secret", out string secretText) || string.IsNullOrEmpty(secretText))
             {
                 throw new InvalidCredentialsException("Senha é obrigatória.");
+            }
+
+            if (Environment.GetEnvironmentVariable("DISABLE_ENCRYPTION") != "true")
+            {
+                if (null == _cryptoKeyDTO)
+                {
+                    throw new InvalidCredentialsException("Chave inválida.");
+                }
+
+                var cryptoService = _dependencies.CryptoService;
+
+                secretText = cryptoService.DecryptData(_cryptoKeyDTO.KeyId, secretText);
             }
 
             var user = await _dependencies.UserManager.FindByEmailAsync(userText);
@@ -97,7 +115,35 @@ namespace SmartCondoApi.Services.Auth
 
         private string GenerateToken(Models.User user, string userType)
         {
-            return new Infra.TokenHandler(_dependencies.Configuration).Generate(user.Id.ToString(), user.Email, userType, DateTime.Now.AddDays(1));
+            return new TokenHandler(_dependencies.Configuration).Generate(user.Id.ToString(), user.Email, userType, DateTime.Now.AddDays(1));
+        }
+
+        public AuthKeyDTO GetPublicKey()
+        {
+            lock (_keyLock)
+            {
+                if (_cryptoKeyDTO?.Expiration < DateTime.UtcNow)
+                {
+                    return GenerateKeyAuth();
+                }
+
+                var cryptoService = _dependencies.CryptoService;
+
+                _cryptoKeyDTO = cryptoService.GenerateNewKey();
+
+                return GenerateKeyAuth();
+            }
+        }
+
+        private static AuthKeyDTO GenerateKeyAuth()
+        {
+            return new AuthKeyDTO()
+            {
+                KeyId = _cryptoKeyDTO.KeyId,
+                PublicKey = _cryptoKeyDTO.PublicKeyPem,
+                ExpiresAt = _cryptoKeyDTO.Expiration,
+                Format = "PEM"
+            };
         }
     }
 }

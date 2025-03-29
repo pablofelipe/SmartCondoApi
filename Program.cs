@@ -11,6 +11,7 @@ using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services.Auth;
 using SmartCondoApi.Services.Condominium;
+using SmartCondoApi.Services.Crypto;
 using SmartCondoApi.Services.Email;
 using SmartCondoApi.Services.LinkGenerator;
 using SmartCondoApi.Services.Message;
@@ -164,6 +165,8 @@ builder.Services.AddMemoryCache(options =>
 {
     options.SizeLimit = 1024; // Limite de tamanho em MB
 });
+
+builder.Services.AddScoped<ICryptoService, CryptoService>();
 
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 

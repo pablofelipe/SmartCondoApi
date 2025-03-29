@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -157,7 +158,7 @@ namespace SmartCondoApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: false),
                     Phone1 = table.Column<string>(type: "text", nullable: false),
@@ -235,8 +236,7 @@ namespace SmartCondoApi.Migrations
                     CondominiumId = table.Column<int>(type: "integer", nullable: false),
                     TowerId = table.Column<int>(type: "integer", nullable: true),
                     FloorId = table.Column<int>(type: "integer", nullable: true),
-                    RecipientId = table.Column<long>(type: "bigint", nullable: true),
-                    RecipientUserId = table.Column<long>(type: "bigint", nullable: false)
+                    RecipientUserId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -256,8 +256,7 @@ namespace SmartCondoApi.Migrations
                         name: "FK_Messages_UserProfiles_RecipientUserId",
                         column: x => x.RecipientUserId,
                         principalTable: "UserProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Messages_UserProfiles_SenderId",
                         column: x => x.SenderId,

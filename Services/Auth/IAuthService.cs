@@ -6,5 +6,6 @@ namespace SmartCondoApi.Services.Auth
     public interface IAuthService
     {
         Task<LoginResponseDTO> Login([FromBody] Dictionary<string, string> body);
+        AuthKeyDTO GetPublicKey();
     }
 }

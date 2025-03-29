@@ -87,6 +87,13 @@ namespace SmartCondoApi.Services.User
                 TwoFactorEnabled = true
             };
 
+            if (Environment.GetEnvironmentVariable("DISABLE_ENCRYPTION") != "true")
+            {
+                var cryptoService = _dependencies.CryptoService;
+
+                userCreateDTO.User.Password = cryptoService.DecryptData(userCreateDTO.User.KeyId, userCreateDTO.User.Password);
+            }
+
             user.PasswordHash = _dependencies.UserManager.PasswordHasher.HashPassword(user, userCreateDTO.User.Password);
 
             var userProfile = new UserProfile

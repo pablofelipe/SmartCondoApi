@@ -73,6 +73,13 @@ namespace SmartCondoApi.Models
                 .HasForeignKey(c => c.UserId)
                 .IsRequired();
 
+            modelBuilder.Entity<UserProfile>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id)
+                      .UseIdentityAlwaysColumn();
+            });
+
             // Configuração do relacionamento Sender (Remetente)
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)          // Cada Message tem um Sender

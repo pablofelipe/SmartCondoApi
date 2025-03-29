@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250326134834_InitialCreate")]
+    [Migration("20250329145604_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -205,10 +205,7 @@ namespace SmartCondoApi.Migrations
                     b.Property<int?>("FloorId")
                         .HasColumnType("integer");
 
-                    b.Property<long?>("RecipientId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("RecipientUserId")
+                    b.Property<long?>("RecipientUserId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("Scope")
@@ -470,7 +467,7 @@ namespace SmartCondoApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -648,9 +645,7 @@ namespace SmartCondoApi.Migrations
 
                     b.HasOne("SmartCondoApi.Models.UserProfile", "RecipientUser")
                         .WithMany()
-                        .HasForeignKey("RecipientUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RecipientUserId");
 
                     b.HasOne("SmartCondoApi.Models.UserProfile", "Sender")
                         .WithMany("SentMessages")

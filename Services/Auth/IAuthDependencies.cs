@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using SmartCondoApi.Models;
+using SmartCondoApi.Services.Crypto;
 
 namespace SmartCondoApi.Services.Auth
 {
@@ -8,5 +9,6 @@ namespace SmartCondoApi.Services.Auth
         SmartCondoContext Context { get; }
         IConfiguration Configuration { get; }
         UserManager<Models.User> UserManager { get; }
+        ICryptoService CryptoService { get; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace SmartCondoApi.Models
@@ -12,6 +13,8 @@ namespace SmartCondoApi.Models
             UserMessages = [];
         }
 
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Chave primária
         public string Name { get; set; }
         public string Address { get; set; }

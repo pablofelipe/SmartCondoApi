@@ -6,5 +6,6 @@
         public string Password { get; set; }
         public DateTimeOffset Expiration { get; set; }
         public bool Enabled { get; set; }
+        public string KeyId { get; set; }
     }
 }
