@@ -1,4 +1,4 @@
-# smartCondo
+# SmartCondo
 
 ## 📌 Overview
 This project is a condominium administration system that simplifies user management, communication between residents and administrators, and hierarchical permission control. The system was developed with a focus on security, scalability, and usability.
@@ -70,7 +70,3 @@ http://localhost:5254/api/v1 (backend)
 
 ## 🤝 Contribution
 Contributions are welcome! Please open an issue or submit a pull request following our contribution guidelines.
-
-```
-
-You can save this content as `README.md` in your project's root directory. The file follows standard Markdown formatting and includes all the key information from the Portuguese version while maintaining proper technical documentation structure.
