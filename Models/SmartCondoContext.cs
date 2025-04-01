@@ -147,6 +147,23 @@ namespace SmartCondoApi.Models
                 .HasForeignKey(f => f.UserId)
                 .IsRequired();
 
+            modelBuilder.Entity<UserType>().HasData(
+                new UserType { Id = 1, Name = "SystemAdministrator", Description = "Administrador do sistema" },
+                new UserType { Id = 2, Name = "CondominiumAdministrator", Description = "Síndico" },
+                new UserType { Id = 3, Name = "Resident", Description = "Condômino" },
+                new UserType { Id = 4, Name = "Janitor", Description = "Zelador" },
+                new UserType { Id = 5, Name = "Doorman", Description = "Porteiro" },
+                new UserType { Id = 6, Name = "Cleaner", Description = "Funcionário de Limpeza" },
+                new UserType { Id = 7, Name = "Security", Description = "Segurança" },
+                new UserType { Id = 8, Name = "ServiceProvider", Description = "Prestador de Serviços" },
+                new UserType { Id = 9, Name = "ExternalProvider", Description = "Prestador Externo" },
+                new UserType { Id = 10, Name = "DeliveryPerson", Description = "Funcionário de Entrega" },
+                new UserType { Id = 11, Name = "Visitor", Description = "Visitante" },
+                new UserType { Id = 12, Name = "CleaningManager", Description = "Administração de Limpeza" },
+                new UserType { Id = 13, Name = "ResidentCommitteeMember", Description = "Conselheiro" },
+                new UserType { Id = 14, Name = "AdministrativeAssistant", Description = "Funcionário da Administração" }
+            );
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -184,9 +201,12 @@ namespace SmartCondoApi.Models
                     await roleManager.AddClaimAsync(role, new Claim("Permission", property.Name));
             }
 
-            foreach (var allowedType in permission.AllowedRecipientTypes)
+            if (null != permission.AllowedRecipientTypes)
             {
-                await roleManager.AddClaimAsync(role, new Claim("AllowedRecipient", allowedType));
+                foreach (var allowedType in permission.AllowedRecipientTypes)
+                {
+                    await roleManager.AddClaimAsync(role, new Claim("AllowedRecipient", allowedType));
+                }
             }
         }
     }

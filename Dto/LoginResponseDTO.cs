@@ -23,12 +23,20 @@
 
     public class UserPermissionsDTO
     {
+        public bool CanManageAllCondominiums { get; set; }
+        public bool CanRegisterAnyUserType { get; set; } //Pode adicionar todos menos os que estão em BlockedUserTypes
         public bool CanSendMessages { get; set; }
         public bool CanSendToIndividuals { get; set; }
         public bool CanSendToGroups { get; set; }
         public bool CanReceiveMessages { get; set; }
         public bool CanRegisterUsers { get; set; }
         public bool CanRegisterVehicles { get; set; }
-        public List<string> AllowedRecipientTypes { get; set; } // Tipos de usuários permitidos
+        public bool IsApartmentOwner { get; set; }
+
+        public List<string> AllowedRecipientTypes { get; set; } // Usuários com permissão de envio de mensagens
+
+        public List<string> BlockedUserTypes { get; set; } // Usuários sem permissão de adição
+
+        public List<string> RegisterableUserTypes { get; set; } // Usuários com permissão de adição
     }
 }

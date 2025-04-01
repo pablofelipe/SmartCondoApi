@@ -13,7 +13,7 @@ namespace SmartCondoApi.Controllers
         [Authorize]
         public async Task<IEnumerable<UserType>> Get()
         {
-            return await _context.UserTypes.ToListAsync();
+            return await _context.UserTypes.OrderBy(n => n.Description).ToListAsync();
         }
     }
 }

@@ -12,6 +12,11 @@ namespace SmartCondoApi.Services.Condominium
             return await _context.Condominiums.ToListAsync();
         }
 
+        public async Task<Models.Condominium> Get(int condominiumId)
+        {
+            return await _context.Condominiums.FindAsync(condominiumId);
+        }
+
         public async Task<List<UserProfileResponseDTO>> SearchUsers(int condominiumId, UserProfileSearchDTO searchDto)
         {
             if (condominiumId < 1)

@@ -17,6 +17,22 @@ namespace SmartCondoApi.Controllers
             return await _condominiumService.Get();
         }
 
+        // Obter um condominio por ID
+        [HttpGet("{id}")]
+        public async Task<ActionResult> Get(int id)
+        {
+            try
+            {
+                var condo = await _condominiumService.Get(id);
+
+                return Ok(condo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { ex.Message });
+            }
+        }
+
         [HttpGet("{condominiumId}/users/search")]
         public async Task<ActionResult> SearchUsers(
             [FromRoute] int condominiumId,
