@@ -77,7 +77,12 @@ namespace SmartCondoApi.Services.Crypto
                 var decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256);
                 return Encoding.UTF8.GetString(decryptedData);
             }
-            catch (CryptographicException ex)
+            catch (CryptographicException) when (encryptedData.Length == rsa.KeySize / 8)
+            {
+                var decryptedData = rsa.Decrypt(encryptedData, RSAEncryptionPadding.Pkcs1);
+                return Encoding.UTF8.GetString(decryptedData);
+            }
+            catch (Exception ex)
             {
                 Log.Debug($"Tamanho dos dados criptografados: {encryptedData.Length} bytes");
                 Log.Debug($"Chave usada: {keyId}");

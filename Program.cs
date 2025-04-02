@@ -147,7 +147,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("ProductionCorsPolicy", policy =>
     {
         // Permitir origens específicas
-        policy.WithOrigins("https://www.smartcondocli.com", "https://smartcondohub.com", "https://smartcondoapp.com")
+        policy.WithOrigins("https://smartcondoapp.com", "http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // Cookies ou autenticação
