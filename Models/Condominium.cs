@@ -18,9 +18,6 @@ namespace SmartCondoApi.Models
         public ICollection<UserProfile> Users { get; set; }
 
         [JsonIgnore]
-        public ICollection<Service> Services { get; set; }
-
-        [JsonIgnore]
         public ICollection<Message> Messages { get; set; }
 
     }

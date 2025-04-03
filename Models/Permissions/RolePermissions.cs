@@ -14,6 +14,8 @@ namespace SmartCondoApi.Models.Permissions
 
                 userPermission.CanSendMessages = userPermission.CanSendToIndividuals || userPermission.CanSendToGroups;
                 userPermission.CanRegisterVehicles = userPermission.CanRegisterUsers;
+
+                userPermission.CanEditUsers = userPermission.CanRegisterUsers;
             }
 
             return rawPermissions;
@@ -29,6 +31,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = true,
                 CanReceiveMessages = true,
                 CanRegisterUsers = true,
+                CanViewUsers = true,
                 AllowedRecipientTypes = ["SystemAdministrator", "CondominiumAdministrator", "Resident", "Janitor"],
             },
             ["CondominiumAdministrator"] = new UserPermissionsDTO
@@ -38,6 +41,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = true,
                 CanReceiveMessages = true,
                 CanRegisterUsers = true,
+                CanViewUsers = true,
                 AllowedRecipientTypes = ["CondominiumAdministrator", "ResidentCommitteeMember", "Resident", "Janitor"],
                 BlockedUserTypes = ["SystemAdministrator"]
             },
@@ -47,6 +51,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = true,
                 CanRegisterUsers = false,
+                CanViewUsers = false,
                 IsApartmentOwner = true,
                 AllowedRecipientTypes = ["SystemAdministrator", "CondominiumAdministrator"]
             },
@@ -56,6 +61,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = true,
                 CanRegisterUsers = false,
+                CanViewUsers = true,
                 AllowedRecipientTypes = ["SystemAdministrator", "CondominiumAdministrator", "Resident"]
             },
             ["Doorman"] = new UserPermissionsDTO
@@ -64,6 +70,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = true,
                 CanRegisterUsers = true,
+                CanViewUsers = true,
                 AllowedRecipientTypes = ["SystemAdministrator", "CondominiumAdministrator", "Resident"],
                 RegisterableUserTypes = ["Visitor"]
             },
@@ -73,6 +80,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = true,
                 CanRegisterUsers = false,
+                CanViewUsers = false,
                 AllowedRecipientTypes = ["CondominiumAdministrator", "Janitor", "CleaningManager"]
             },
             ["Security"] = new UserPermissionsDTO
@@ -81,6 +89,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = false,
                 CanRegisterUsers = true,
+                CanViewUsers = true,
                 AllowedRecipientTypes = ["CondominiumAdministrator", "Janitor"],
                 RegisterableUserTypes = ["Visitor"]
             },
@@ -90,6 +99,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = true,
                 CanRegisterUsers = false,
+                CanViewUsers = true,
                 AllowedRecipientTypes = ["CondominiumAdministrator", "Resident"]
             },
             ["ExternalProvider"] = new UserPermissionsDTO
@@ -98,6 +108,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = false,
                 CanRegisterUsers = false,
+                CanViewUsers = false,
                 AllowedRecipientTypes = ["Resident"]
             },
             ["DeliveryPerson"] = new UserPermissionsDTO
@@ -106,6 +117,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = true,
                 CanRegisterUsers = false,
+                CanViewUsers = true,
                 AllowedRecipientTypes = ["Resident"]
             },
             ["CleaningManager"] = new UserPermissionsDTO
@@ -114,6 +126,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = true,
                 CanRegisterUsers = true,
+                CanViewUsers = false,
                 AllowedRecipientTypes = ["CondominiumAdministrator", "Janitor", "Cleaner"],
                 RegisterableUserTypes = ["Cleaner"]
             },
@@ -123,6 +136,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = false,
                 CanReceiveMessages = false,
                 CanRegisterUsers = false,
+                CanViewUsers = false,
             },
             ["ResidentCommitteeMember"] = new UserPermissionsDTO
             {
@@ -130,6 +144,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = true,
                 CanReceiveMessages = true,
                 CanRegisterUsers = true,
+                CanViewUsers = true,
                 IsApartmentOwner = true,
                 AllowedRecipientTypes = ["CondominiumAdministrator", "ResidentCommitteeMember", "Resident", "Janitor"],
                 RegisterableUserTypes = ["Resident"]
@@ -141,6 +156,7 @@ namespace SmartCondoApi.Models.Permissions
                 CanSendToGroups = true,
                 CanReceiveMessages = true,
                 CanRegisterUsers = true,
+                CanViewUsers = true,
                 AllowedRecipientTypes = ["CondominiumAdministrator", "ResidentCommitteeMember", "Resident", "Janitor"],
                 BlockedUserTypes = ["SystemAdministrator", "CondominiumAdministrator"]
             },

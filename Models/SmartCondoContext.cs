@@ -25,10 +25,6 @@ namespace SmartCondoApi.Models
 
         public DbSet<UserProfile> UserProfiles { get; set; }
 
-        public DbSet<ServiceType> ServiceTypes { get; set; }
-
-        public DbSet<Service> Services { get; set; }
-
         public DbSet<Condominium> Condominiums { get; set; }
 
         public DbSet<Tower> Towers { get; set; }
@@ -120,17 +116,6 @@ namespace SmartCondoApi.Models
                 .HasMany(c => c.Users)
                 .WithOne(u => u.Condominium)
                 .HasForeignKey(u => u.CondominiumId);
-
-            modelBuilder.Entity<Condominium>()
-                .HasMany(c => c.Services)
-                .WithOne(s => s.Condominium)
-                .HasForeignKey(s => s.CondominiumId);
-
-
-            modelBuilder.Entity<ServiceType>()
-                .HasMany(st => st.Services)
-                .WithOne(s => s.ServiceType)
-                .HasForeignKey(s => s.ServiceTypeId);
 
 
             modelBuilder.Entity<Vehicle>()

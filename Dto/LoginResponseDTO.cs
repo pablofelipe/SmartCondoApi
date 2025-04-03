@@ -30,6 +30,8 @@
         public bool CanSendToGroups { get; set; }
         public bool CanReceiveMessages { get; set; }
         public bool CanRegisterUsers { get; set; }
+        public bool CanEditUsers { get; set; }
+        public bool CanViewUsers { get; set; }
         public bool CanRegisterVehicles { get; set; }
         public bool IsApartmentOwner { get; set; }
 

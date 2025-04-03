@@ -289,13 +289,21 @@ namespace SmartCondoApi.Services.User
 
         public async Task<UserProfile> GetUser(long id)
         {
-            var user = await _dependencies.Context.UserProfiles.FindAsync(id);
+            var userProfile = await _dependencies.Context.UserProfiles.FindAsync(id);
+            if (userProfile == null)
+            {
+                throw new UserNotFoundException("Perfil de usuário não encontrado.");
+            }
+
+            var user = await _dependencies.UserManager.FindByIdAsync(id.ToString());
             if (user == null)
             {
                 throw new UserNotFoundException("Usuário não encontrado.");
             }
 
-            return user;
+            userProfile.User = user;
+
+            return userProfile;
         }
 
         public async Task Delete(long id)

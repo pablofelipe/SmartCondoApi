@@ -12,8 +12,6 @@
 
         public ICollection<UserProfile> Users { get; set; }
 
-        public ICollection<Service> Services { get; set; }
-
         public ICollection<Message> Messages { get; set; }
     }
 }

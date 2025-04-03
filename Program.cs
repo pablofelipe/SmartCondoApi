@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -198,6 +199,26 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
+var provider = new FileExtensionContentTypeProvider();
+provider.Mappings[".json"] = "application/json";
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = provider
+});
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        if (ctx.File.Name == "manifest.json")
+        {
+            ctx.Context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            ctx.Context.Response.Headers.Add("Access-Control-Expose-Headers", "Content-Type");
+        }
+    }
+});
 
 app.MapControllers();
 
