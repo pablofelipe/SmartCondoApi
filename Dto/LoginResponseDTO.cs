@@ -25,6 +25,7 @@
     {
         public bool CanManageAllCondominiums { get; set; }
         public bool CanRegisterAnyUserType { get; set; } //Pode adicionar todos menos os que estão em BlockedUserTypes
+        public bool CanViewMessages { get; set; }
         public bool CanSendMessages { get; set; }
         public bool CanSendToIndividuals { get; set; }
         public bool CanSendToGroups { get; set; }
@@ -33,6 +34,9 @@
         public bool CanEditUsers { get; set; }
         public bool CanViewUsers { get; set; }
         public bool CanRegisterVehicles { get; set; }
+        public bool CanEditVehicles { get; set; }
+        public bool CanViewVehicles { get; set; }
+
         public bool IsApartmentOwner { get; set; }
 
         public List<string> AllowedRecipientTypes { get; set; } // Usuários com permissão de envio de mensagens

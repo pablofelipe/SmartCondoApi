@@ -16,7 +16,7 @@ namespace SmartCondoApi.Controllers
         {
             try
             {
-                var userProfileResponseDTO = await _dependencies.UserProfileService.AddUserAsync(userCreateDTO);
+                var userProfileResponseDTO = await _dependencies.UserProfileService.Add(userCreateDTO);
 
                 string confirmationLink = _dependencies.LinkGeneratorService.GenerateConfirmationLink(
                     "ConfirmEmail",
@@ -108,7 +108,7 @@ namespace SmartCondoApi.Controllers
         {
             try
             {
-                var userResponseDTO = await _dependencies.UserProfileService.UpdateUserAsync(id, updatedUser);
+                var userResponseDTO = await _dependencies.UserProfileService.Update(id, updatedUser);
                 return Ok(userResponseDTO);
             }
             catch (InvalidCredentialsException ex)
@@ -140,7 +140,7 @@ namespace SmartCondoApi.Controllers
         {
             try
             {
-                var user = await _dependencies.UserProfileService.GetUser(id);
+                var user = await _dependencies.UserProfileService.Get(id);
 
                 return Ok(user);
             }

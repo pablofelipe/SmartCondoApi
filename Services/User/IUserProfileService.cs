@@ -5,13 +5,13 @@ namespace SmartCondoApi.Services.User
 {
     public interface IUserProfileService
     {
-        Task<UserProfileResponseDTO> AddUserAsync(UserProfileCreateDTO userCreateDTO);
+        Task<UserProfileResponseDTO> Add(UserProfileCreateDTO userCreateDTO);
 
-        Task<UserProfileResponseDTO> UpdateUserAsync(long userId, UserProfileUpdateDTO userUpdateDTO);
+        Task<UserProfileResponseDTO> Update(long userId, UserProfileUpdateDTO userUpdateDTO);
 
         Task<IEnumerable<UserProfile>> Get();
 
-        Task<UserProfile> GetUser(long id);
+        Task<UserProfileEditDTO> Get(long id);
 
         Task Delete(long id);
     }

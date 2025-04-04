@@ -12,7 +12,6 @@
         public int? TowerId { get; set; }
         public int? FloorId { get; set; }
         public int? Apartment { get; set; }
-
         public int? ParkingSpaceNumber { get; set; }
         public UserCreateDTO User { get; set; }
     }

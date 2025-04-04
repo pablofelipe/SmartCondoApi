@@ -9,7 +9,7 @@ namespace SmartCondoApi.Services.User
 {
     public class UserProfileService(IUserProfileServiceDependencies _dependencies) : IUserProfileService
     {
-        public async Task<UserProfileResponseDTO> AddUserAsync(UserProfileCreateDTO userCreateDTO)
+        public async Task<UserProfileResponseDTO> Add(UserProfileCreateDTO userCreateDTO)
         {
             // Valida o CPF/CNPJ
             if (!ValidateRegistrationNumber(userCreateDTO.RegistrationNumber))
@@ -236,7 +236,7 @@ namespace SmartCondoApi.Services.User
             return new RegistrationNumberValidator().Verify(registrationNumber);
         }
 
-        public async Task<UserProfileResponseDTO> UpdateUserAsync(long userId, UserProfileUpdateDTO userUpdateDTO)
+        public async Task<UserProfileResponseDTO> Update(long userId, UserProfileUpdateDTO userUpdateDTO)
         {
             if (null == userUpdateDTO)
             {
@@ -246,39 +246,58 @@ namespace SmartCondoApi.Services.User
             var context = _dependencies.Context;
 
             // Busca o usuário existente no banco de dados
-            var user = await context.UserProfiles
+            var userProfile = await context.UserProfiles
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (null == user)
+            if (null == userProfile)
                 throw new UserNotFoundException("Usuário não encontrado.");
 
-            if (userUpdateDTO.Name != null) user.Name = userUpdateDTO.Name;
-            if (userUpdateDTO.Address != null) user.Address = userUpdateDTO.Address;
+            if (userUpdateDTO.Name != null) userProfile.Name = userUpdateDTO.Name;
+            if (userUpdateDTO.Address != null) userProfile.Address = userUpdateDTO.Address;
 
-            if (userUpdateDTO.CondominiumId.HasValue) user.CondominiumId = userUpdateDTO.CondominiumId.Value;
-            if (userUpdateDTO.TowerId.HasValue) user.TowerId = userUpdateDTO.TowerId.Value;
-            if (userUpdateDTO.FloorId.HasValue) user.FloorNumber = userUpdateDTO.FloorId.Value;
-            if (userUpdateDTO.Apartment.HasValue) user.Apartment = userUpdateDTO.Apartment.Value;
+            if (userUpdateDTO.CondominiumId.HasValue) userProfile.CondominiumId = userUpdateDTO.CondominiumId.Value;
+            if (userUpdateDTO.TowerId.HasValue) userProfile.TowerId = userUpdateDTO.TowerId.Value;
+            if (userUpdateDTO.FloorId.HasValue) userProfile.FloorNumber = userUpdateDTO.FloorId.Value;
+            if (userUpdateDTO.Apartment.HasValue) userProfile.Apartment = userUpdateDTO.Apartment.Value;
 
             // Atualiza os dados do Login, se fornecido
-            if (userUpdateDTO.User != null && user.User != null)
+            if (userUpdateDTO.User != null)
             {
-                if (userUpdateDTO.User.Email != null) user.User.Email = userUpdateDTO.User.Email;
-                if (userUpdateDTO.User.Password != null) user.User.PasswordHash = userUpdateDTO.User.Password;
-                if (userUpdateDTO.User.Enabled.HasValue) user.User.Enabled = userUpdateDTO.User.Enabled.Value;
+                //não altera o email!
+                //if (userUpdateDTO.User.Email != null) user.Email = userUpdateDTO.User.Email;
+                //não é o caminho para desabilitar
+                //if (userUpdateDTO.User.Enabled.HasValue) user.Enabled = userUpdateDTO.User.Enabled.Value;
+
+                if (!string.IsNullOrEmpty(userUpdateDTO.User.Password))
+                {
+                    var user = await _dependencies.UserManager.FindByIdAsync(userId.ToString());
+
+                    if (null != user)
+                    {
+                        if (Environment.GetEnvironmentVariable("DISABLE_ENCRYPTION") != "true")
+                        {
+                            var cryptoService = _dependencies.CryptoService;
+
+                            userUpdateDTO.User.Password = cryptoService.DecryptData(userUpdateDTO.User.KeyId, userUpdateDTO.User.Password);
+                        }
+
+                        user.PasswordHash = _dependencies.UserManager.PasswordHasher.HashPassword(user, userUpdateDTO.User.Password);
+                    }
+                }
             }
 
             await context.SaveChangesAsync();
 
             return new UserProfileResponseDTO()
             {
-                Name = user.Name,
-                Address = user.Address,
-                RegistrationNumber = user.RegistrationNumber,
-                CondominiumId = user.CondominiumId,
-                TowerId = user.TowerId,
-                FloorId = user.FloorNumber,
-                Apartment = user.Apartment
+                Name = userProfile.Name,
+                Address = userProfile.Address,
+                RegistrationNumber = userProfile.RegistrationNumber,
+                CondominiumId = userProfile.CondominiumId,
+                TowerId = userProfile.TowerId,
+                FloorId = userProfile.FloorNumber,
+                Apartment = userProfile.Apartment,
+                Message = "Usuário atualizado.",
             };
         }
 
@@ -287,7 +306,7 @@ namespace SmartCondoApi.Services.User
             return await _dependencies.Context.UserProfiles.ToListAsync();
         }
 
-        public async Task<UserProfile> GetUser(long id)
+        public async Task<UserProfileEditDTO> Get(long id)
         {
             var userProfile = await _dependencies.Context.UserProfiles.FindAsync(id);
             if (userProfile == null)
@@ -301,9 +320,26 @@ namespace SmartCondoApi.Services.User
                 throw new UserNotFoundException("Usuário não encontrado.");
             }
 
-            userProfile.User = user;
+            var dto = new UserProfileEditDTO
+            {
+                Id = userProfile.Id,
+                Name = userProfile.Name,
+                Address = userProfile.Address,
+                Phone1 = userProfile.Phone1,
+                Phone2 = userProfile.Phone2,
+                UserTypeId = userProfile.UserTypeId,
+                RegistrationNumber = userProfile.RegistrationNumber,
+                CondominiumId = userProfile.CondominiumId,
+                TowerId = userProfile.TowerId,
+                FloorId = userProfile.FloorNumber,
+                Apartment = userProfile.Apartment,
+                ParkingSpaceNumber = userProfile.ParkingSpaceNumber,
+                Email = user.Email ?? string.Empty,
+                Enabled = user.Enabled,
+                PasswordLength = 8 // Não sabemos o tamanho real, será apenas visual
+            };
 
-            return userProfile;
+            return dto;
         }
 
         public async Task Delete(long id)
@@ -319,8 +355,14 @@ namespace SmartCondoApi.Services.User
                 throw new UserNotFoundException("Usuário não encontrado.");
             }
 
-            userProfile.User.Enabled = false;
-            //_context.UserProfiles.Remove(user);
+            if (null != userProfile.User)
+            {
+                userProfile.User.Enabled = false;
+            }
+            else
+            {
+                _dependencies.Context.UserProfiles.Remove(userProfile);
+            }
 
             await _dependencies.Context.SaveChangesAsync();
         }

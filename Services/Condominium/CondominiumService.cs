@@ -33,7 +33,7 @@ namespace SmartCondoApi.Services.Condominium
                         u.CondominiumId == condominiumId 
                         && null != u.User 
                         && u.User.Enabled == true
-                        && u.UserTypeId == searchDto.Type);
+                        && u.UserTypeId == searchDto.Type || searchDto.Type == 0);
 
             if (!string.IsNullOrEmpty(searchDto.Name))
             {
