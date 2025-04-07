@@ -177,6 +177,8 @@ namespace SmartCondoApi.Services.Message
                 return [recipient];
             }
 
+            query = query.Where(me => me.Id != sender.Id);
+
             // Aplicar filtros baseados no escopo
             if (messageDto.CondominiumId.HasValue)
             {

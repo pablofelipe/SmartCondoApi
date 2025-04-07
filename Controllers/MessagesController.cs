@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using SmartCondoApi.Dto;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services.Message;
@@ -92,16 +93,34 @@ namespace SmartCondoApi.Controllers
             return Ok(message);
         }
 
-        [HttpPost("{id}/read")]
-        public async Task<ActionResult> MarkAsRead(long id)
+        [HttpPatch("{id}/read")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> MarkAsRead(long id)
         {
             var userId = _userManager.GetUserId(User);
-            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(u => u.Id == Convert.ToInt64(userId));
 
-            if (userProfile == null) return Unauthorized();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
 
-            await _messageService.MarkAsReadAsync(id, userProfile.Id);
-            return Ok();
+            try
+            {
+                var userProfileId = Convert.ToInt64(userId);
+                await _messageService.MarkAsReadAsync(id, userProfileId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error marking message as read");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
     }
 }

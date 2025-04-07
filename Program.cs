@@ -18,6 +18,7 @@ using SmartCondoApi.Services.LinkGenerator;
 using SmartCondoApi.Services.Message;
 using SmartCondoApi.Services.Permissions;
 using SmartCondoApi.Services.User;
+using SmartCondoApi.Services.Vehicle;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -172,6 +173,8 @@ builder.Services.AddScoped<ICryptoService, CryptoService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 
 builder.Services.AddScoped<IMessageService, MessageService>();
+
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 var app = builder.Build();
 
