@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SmartCondoApi.Exceptions;
 using SmartCondoApi.Services.Vehicle;
 
 namespace SmartCondoApi.Controllers
@@ -10,6 +9,7 @@ namespace SmartCondoApi.Controllers
     [Authorize]
     public class VehiclesController(IVehicleService _vehicleService) : ControllerBase
     {
+        /*
         [HttpGet]
         public async Task<ActionResult> GetVehicles(
             [FromQuery] string? licensePlate,
@@ -21,13 +21,17 @@ namespace SmartCondoApi.Controllers
         {
             try
             {
-                var vehicles = await _vehicleService.GetFilteredVehiclesAsync(
-                    licensePlate,
-                    model,
-                    apartmentNumber,
-                    parkingSpaceNumber,
-                    ownerName,
-                    cpfCnpj);
+                var vehicleFilterInput = new VehicleFilterInput()
+                {
+                    LicensePlate = licensePlate,
+                    Model = model,
+                    ApartmentNumber = apartmentNumber,
+                    ParkingSpaceNumber = parkingSpaceNumber,
+                    OwnerName = ownerName,
+                    RegistrationNumber = cpfCnpj
+                };
+
+                var vehicles = await _vehicleService.GetFilteredVehiclesAsync(vehicleFilterInput);
 
                 return Ok(vehicles);
             }
@@ -40,5 +44,6 @@ namespace SmartCondoApi.Controllers
                 return StatusCode(500, new { ex.Message });
             }
         }
+        */
     }
 }

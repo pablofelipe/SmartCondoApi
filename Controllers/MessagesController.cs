@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SmartCondoApi.Dto;
+using SmartCondoApi.Exceptions;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services.Message;
 
@@ -112,7 +113,7 @@ namespace SmartCondoApi.Controllers
                 await _messageService.MarkAsReadAsync(id, userProfileId);
                 return NoContent();
             }
-            catch (KeyNotFoundException)
+            catch (MessageNotFoundException)
             {
                 return NotFound();
             }

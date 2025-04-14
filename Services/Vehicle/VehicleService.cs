@@ -1,70 +1,63 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SmartCondoApi.Exceptions;
 using SmartCondoApi.Models;
+using SmartCondoApi.GraphQL.Inputs;
 
 namespace SmartCondoApi.Services.Vehicle
 {
     public class VehicleService(SmartCondoContext _context) : IVehicleService
     {
-        public async Task<IEnumerable<Models.Vehicle>> GetFilteredVehiclesAsync(
-            string? licensePlate = null,
-            string? model = null,
-            int? apartmentNumber = 0,
-            int? parkingSpaceNumber = 0,
-            string? ownerName = null,
-            string? cpfCnpj = null)
+        public async Task<IEnumerable<Models.Vehicle>> GetFilteredVehiclesAsync(VehicleFilterInput filter)
         {
             var query = _context.Vehicles
                 .Include(v => v.User)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(licensePlate))
-                query = query.Where(v => v.LicensePlate.Contains(licensePlate));
+            if (!string.IsNullOrEmpty(filter.LicensePlate))
+                query = query.Where(v => EF.Functions.ILike(v.LicensePlate, $"%{filter.LicensePlate}%"));
 
-            if (!string.IsNullOrEmpty(model))
-                query = query.Where(v => v.Model.Contains(model));
+            if (!string.IsNullOrEmpty(filter.Model))
+                query = query.Where(v => EF.Functions.ILike(v.Model, $"%{filter.Model}%"));
 
-            if (apartmentNumber != null)
+            if (filter.ApartmentNumber.HasValue)
             {
-                var user = _context.UserProfiles.FirstOrDefaultAsync(us => us.Apartment == apartmentNumber);
+                var user = await _context.UserProfiles
+                    .FirstOrDefaultAsync(u => u.Apartment == filter.ApartmentNumber);
 
-                if (null == user)
-                    throw new UserNotFoundException($"Usuário para apartamento {apartmentNumber} não encontrado");
-
-                query = query.Where(us => us.UserId == user.Id);
+                query = user == null
+                    ? query.Where(v => false)
+                    : query.Where(v => v.UserId == user.Id);
             }
 
-            if (parkingSpaceNumber != null)
+            if (filter.ParkingSpaceNumber.HasValue)
             {
-                var user = _context.UserProfiles.FirstOrDefaultAsync(us => us.ParkingSpaceNumber == parkingSpaceNumber);
+                var user = await _context.UserProfiles
+                    .FirstOrDefaultAsync(u => u.ParkingSpaceNumber == filter.ParkingSpaceNumber);
 
-                if (null == user)
-                    throw new UserNotFoundException($"Usuário para vaga {parkingSpaceNumber} não encontrado");
-
-                query = query.Where(us => us.UserId == user.Id);
+                query = user == null
+                    ? query.Where(v => false)
+                    : query.Where(v => v.UserId == user.Id);
             }
 
-            if (!string.IsNullOrEmpty(ownerName))
+            if (!string.IsNullOrEmpty(filter.OwnerName))
             {
-                var userIds = _context.UserProfiles
-                    .Where(u => EF.Functions.Like(u.Name.ToLower(), $"%{ownerName.ToLower()}%"))
+                var userIds = await _context.UserProfiles
+                    .Where(u => EF.Functions.ILike(u.Name, $"%{filter.OwnerName}%"))
                     .Select(u => u.Id)
-                    .ToList();
+                    .ToListAsync();
 
-                if (!userIds.Any())
-                    throw new UserNotFoundException($"Usuário com nome {ownerName} não encontrado");
-
-                query = query.Where(us => userIds.Contains(us.UserId));
+                query = userIds.Any()
+                    ? query.Where(v => userIds.Contains(v.UserId))
+                    : query.Where(v => false);
             }
 
-            if (!string.IsNullOrEmpty(cpfCnpj))
+            if (!string.IsNullOrEmpty(filter.RegistrationNumber))
             {
-                var user = _context.UserProfiles.FirstOrDefaultAsync(u => u.RegistrationNumber == cpfCnpj);
+                var user = await _context.UserProfiles
+                    .FirstOrDefaultAsync(u => u.RegistrationNumber == filter.RegistrationNumber);
 
-                if (null == user)
-                    throw new UserNotFoundException($"Usuário com CPF/CNPJ {cpfCnpj} não encontrado");
-
-                query = query.Where(us => us.UserId == user.Id);
+                query = user == null
+                    ? query.Where(v => false)
+                    : query.Where(v => v.UserId == user.Id);
             }
 
             return await query.ToListAsync();

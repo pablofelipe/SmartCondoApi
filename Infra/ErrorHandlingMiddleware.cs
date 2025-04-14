@@ -1,4 +1,6 @@
-﻿namespace SmartCondoApi.Infra
+﻿using SmartCondoApi.Exceptions;
+
+namespace SmartCondoApi.Infra
 {
     public class ErrorHandlingMiddleware
     {
@@ -15,7 +17,7 @@
             {
                 await _next(context);
             }
-            catch (KeyNotFoundException ex)
+            catch (MessageNotFoundException ex)
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
                 await context.Response.WriteAsJsonAsync(new { error = ex.Message });

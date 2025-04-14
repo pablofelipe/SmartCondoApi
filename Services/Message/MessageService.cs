@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SmartCondoApi.Dto;
+using SmartCondoApi.Exceptions;
 using SmartCondoApi.Models;
 using SmartCondoApi.Models.Permissions;
 
@@ -328,7 +329,7 @@ namespace SmartCondoApi.Services.Message
 
             if (message == null)
             {
-                throw new KeyNotFoundException("Message not found or access denied");
+                throw new MessageNotFoundException("Message not found or access denied");
             }
 
             return message;
@@ -341,7 +342,7 @@ namespace SmartCondoApi.Services.Message
 
             if (userMessage == null)
             {
-                throw new KeyNotFoundException("Message not found or access denied");
+                throw new MessageNotFoundException("Message or user not found");
             }
 
             if (!userMessage.IsRead)

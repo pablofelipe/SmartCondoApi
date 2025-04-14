@@ -8,6 +8,10 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 using SmartCondoApi.Controllers;
+using SmartCondoApi.GraphQL;
+using SmartCondoApi.GraphQL.Inputs;
+using SmartCondoApi.GraphQL.Mutations;
+using SmartCondoApi.GraphQL.Queries;
 using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services.Auth;
@@ -20,6 +24,7 @@ using SmartCondoApi.Services.Permissions;
 using SmartCondoApi.Services.User;
 using SmartCondoApi.Services.Vehicle;
 using System.Text;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -176,6 +181,24 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 
+builder.Services
+    .AddGraphQLServer()
+    .AddQueryType<SmartCondoApi.GraphQL.Query>()
+    .AddMutationType<Mutation>()
+    .AddTypeExtension<VehicleQueries>()
+    .AddTypeExtension<VehicleMutations>()
+    .AddType<VehicleType>()
+    .AddProjections()
+    .ModifyRequestOptions(options =>
+    {
+        options.IncludeExceptionDetails = true;
+    })
+    .AddErrorFilter(error =>
+    {
+        Console.WriteLine($"GraphQL Error: {error.Exception}");
+        return error;
+    });
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -185,6 +208,21 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
+
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next(context);
+    }
+    catch (Exception ex)
+    {
+        Log.Fatal($"Unhandled exception: {ex}");
+        throw;
+    }
+});
+
+app.MapGraphQL();
 
 if (app.Environment.IsDevelopment())
 {
