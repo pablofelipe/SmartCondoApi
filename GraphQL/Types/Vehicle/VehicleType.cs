@@ -9,6 +9,9 @@ namespace SmartCondoApi.GraphQL.Types.Vehicle
         {
             descriptor.Description("Represents a vehicle in the condominium system.");
 
+            descriptor.Field(v => v.Id)
+                .Type<NonNullType<IdType>>();
+
             descriptor
                 .Field(v => v.User)
                 .Description("The owner of this vehicle.")

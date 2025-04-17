@@ -12,6 +12,7 @@ using SmartCondoApi.GraphQL;
 using SmartCondoApi.GraphQL.Inputs;
 using SmartCondoApi.GraphQL.Mutations;
 using SmartCondoApi.GraphQL.Queries;
+using SmartCondoApi.GraphQL.Types.Vehicle;
 using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services.Auth;
@@ -24,7 +25,6 @@ using SmartCondoApi.Services.Permissions;
 using SmartCondoApi.Services.User;
 using SmartCondoApi.Services.Vehicle;
 using System.Text;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -183,11 +183,11 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 builder.Services
     .AddGraphQLServer()
-    .AddQueryType<SmartCondoApi.GraphQL.Query>()
+    .AddQueryType<Query>()
     .AddMutationType<Mutation>()
     .AddTypeExtension<VehicleQueries>()
     .AddTypeExtension<VehicleMutations>()
-    .AddType<VehicleType>()
+    .AddVehicleTypes()
     .AddProjections()
     .ModifyRequestOptions(options =>
     {

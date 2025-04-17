@@ -1,6 +1,6 @@
 ﻿namespace SmartCondoApi.Models
 {
-    public enum VehicleType
+    public enum VehicleTypeEnum
     {
         Car,
         Motorcycle,
@@ -11,7 +11,7 @@
     {
         public int Id { get; set; } // PK
 
-        public VehicleType Type { get; set; }
+        public VehicleTypeEnum Type { get; set; }
         public string LicensePlate { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }

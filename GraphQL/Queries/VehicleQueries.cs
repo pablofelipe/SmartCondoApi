@@ -15,7 +15,44 @@ namespace SmartCondoApi.GraphQL.Queries
             [Service] IVehicleService vehicleService,
             [GraphQLType(typeof(VehicleFilterInputType))] VehicleFilterInput? filter = null)
         {
-            return await vehicleService.GetFilteredVehiclesAsync(filter ?? new VehicleFilterInput());
+            try
+            {
+                return await vehicleService.GetFilteredVehiclesAsync(filter ?? new VehicleFilterInput());
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException(new ErrorBuilder()
+                    .SetMessage(ex.Message)
+                    .SetCode("VEHICLE_FETCH_ERROR")
+                    .Build());
+            }
+        }
+
+        public async Task<Vehicle> GetVehicle(
+            [Service] IVehicleService vehicleService,
+            [ID] string id)
+        {
+            try
+            {
+                if (!int.TryParse(id, out var idInt))
+                {
+                    throw new GraphQLException("VehicleID deve ser numérico");
+                }
+
+                var vehicle = await vehicleService.GetVehicleByIdAsync(idInt);
+                return vehicle ?? throw new GraphQLException(new ErrorBuilder()
+                    .SetMessage("Veículo não encontrado")
+                    .SetCode("VEHICLE_NOT_FOUND")
+                    .SetExtension("id", id)
+                    .Build());
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException(new ErrorBuilder()
+                    .SetMessage(ex.Message)
+                    .SetCode("VEHICLE_FETCH_ERROR")
+                    .Build());
+            }
         }
     }
 }

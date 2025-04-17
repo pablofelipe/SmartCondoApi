@@ -1,16 +1,54 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCondoApi.Models;
 using SmartCondoApi.GraphQL.Inputs;
+using SmartCondoApi.Exceptions;
 
 namespace SmartCondoApi.Services.Vehicle
 {
     public class VehicleService(SmartCondoContext _context) : IVehicleService
     {
+        public async Task<Models.Vehicle> CreateVehicleAsync(Models.Vehicle vehicle)
+        {
+            _context.Vehicles.Add(vehicle);
+            await _context.SaveChangesAsync();
+            return vehicle;
+        }
+
+        public async Task DeleteVehicleAsync(int id)
+        {
+            var vehicle = await GetVehicleByIdAsync(id);
+            if (vehicle != null)
+            {
+                _context.Vehicles.Remove(vehicle);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public async Task<IEnumerable<Models.Vehicle>> GetFilteredVehiclesAsync(VehicleFilterInput filter)
         {
-            var query = _context.Vehicles
-                .Include(v => v.User)
-                .AsQueryable();
+            if (string.IsNullOrEmpty(filter.LicensePlate)
+                && string.IsNullOrEmpty(filter.Model)
+                && string.IsNullOrEmpty(filter.OwnerName)
+                && string.IsNullOrEmpty(filter.RegistrationNumber)
+                && filter.ApartmentNumber == null
+               && filter.ParkingSpaceNumber == null)
+                throw new NoVehicleFilterException("Nenhum parâmetro para veículo recebido");
+
+            var query = from vehicle in _context.Vehicles
+                        join userProfile in _context.UserProfiles
+                        on vehicle.UserId equals userProfile.Id
+                        select new Models.Vehicle
+                        {
+                            Id = vehicle.Id,
+                            Type = vehicle.Type,
+                            LicensePlate = vehicle.LicensePlate,
+                            Brand = vehicle.Brand,
+                            Model = vehicle.Model,
+                            Color = vehicle.Color,
+                            Enabled = vehicle.Enabled,
+                            UserId = userProfile.Id,
+                            User = userProfile
+                        };
 
             if (!string.IsNullOrEmpty(filter.LicensePlate))
                 query = query.Where(v => EF.Functions.ILike(v.LicensePlate, $"%{filter.LicensePlate}%"));
@@ -19,48 +57,32 @@ namespace SmartCondoApi.Services.Vehicle
                 query = query.Where(v => EF.Functions.ILike(v.Model, $"%{filter.Model}%"));
 
             if (filter.ApartmentNumber.HasValue)
-            {
-                var user = await _context.UserProfiles
-                    .FirstOrDefaultAsync(u => u.Apartment == filter.ApartmentNumber);
-
-                query = user == null
-                    ? query.Where(v => false)
-                    : query.Where(v => v.UserId == user.Id);
-            }
+                query = query.Where(v => v.User.Apartment == filter.ApartmentNumber.Value);
 
             if (filter.ParkingSpaceNumber.HasValue)
-            {
-                var user = await _context.UserProfiles
-                    .FirstOrDefaultAsync(u => u.ParkingSpaceNumber == filter.ParkingSpaceNumber);
-
-                query = user == null
-                    ? query.Where(v => false)
-                    : query.Where(v => v.UserId == user.Id);
-            }
+                query = query.Where(v => v.User.ParkingSpaceNumber == filter.ParkingSpaceNumber.Value);
 
             if (!string.IsNullOrEmpty(filter.OwnerName))
-            {
-                var userIds = await _context.UserProfiles
-                    .Where(u => EF.Functions.ILike(u.Name, $"%{filter.OwnerName}%"))
-                    .Select(u => u.Id)
-                    .ToListAsync();
-
-                query = userIds.Any()
-                    ? query.Where(v => userIds.Contains(v.UserId))
-                    : query.Where(v => false);
-            }
+                query = query.Where(v => EF.Functions.ILike(v.User.Name, $"%{filter.OwnerName}%"));
 
             if (!string.IsNullOrEmpty(filter.RegistrationNumber))
-            {
-                var user = await _context.UserProfiles
-                    .FirstOrDefaultAsync(u => u.RegistrationNumber == filter.RegistrationNumber);
-
-                query = user == null
-                    ? query.Where(v => false)
-                    : query.Where(v => v.UserId == user.Id);
-            }
+                query = query.Where(v => v.User.RegistrationNumber == filter.RegistrationNumber);
 
             return await query.ToListAsync();
+        }
+
+        public async Task<Models.Vehicle> GetVehicleByIdAsync(int id)
+        {
+            return await _context.Vehicles
+                .Include(v => v.User)
+                .FirstOrDefaultAsync(v => v.Id == id);
+        }
+
+        public async Task<Models.Vehicle> UpdateVehicleAsync(Models.Vehicle vehicle)
+        {
+            _context.Vehicles.Update(vehicle);
+            await _context.SaveChangesAsync();
+            return vehicle;
         }
     }
 }
