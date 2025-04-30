@@ -9,5 +9,7 @@ namespace SmartCondoApi.Services.Crypto
         string EncryptData(string plainText, string publicKeyPem);
 
         string DecryptData(string keyId, string encryptedDataBase64);
+
+        bool IsExpired(string keyId);
     }
 }

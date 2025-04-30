@@ -26,9 +26,9 @@ namespace SmartCondoApi.Services.Crypto
                 Expiration = DateTime.UtcNow.Add(_keyValidity)
             };
 
-            _keyStore[keyId] = key;
-
             CleanExpiredKeys();
+
+            _keyStore[keyId] = key;
 
             return key;
         }
@@ -62,9 +62,16 @@ namespace SmartCondoApi.Services.Crypto
 
         public string DecryptData(string keyId, string encryptedDataBase64)
         {
-            if (!_keyStore.TryGetValue(keyId, out var keyPair) || keyPair.Expiration < DateTime.UtcNow)
+            if (!_keyStore.TryGetValue(keyId, out var keyPair))
             {
-                throw new Exception("Chave inválida ou expirada");
+                throw new Exception("Chave inválida");
+            }
+
+            if (keyPair.Expiration < DateTime.UtcNow)
+            {
+                keyPair.Expired = true;
+
+                throw new Exception("Chave expirada");
             }
 
             using var rsa = RSA.Create();
@@ -98,11 +105,22 @@ namespace SmartCondoApi.Services.Crypto
 
         private static void CleanExpiredKeys()
         {
-            var expiredKeys = _keyStore.Where(k => k.Value.Expiration < DateTime.UtcNow).ToList();
+            var expiredKeys = _keyStore.Where(k => k.Value.Expired).ToList();
             foreach (var key in expiredKeys)
             {
                 _keyStore.TryRemove(key.Key, out _);
             }
+        }
+
+        public bool IsExpired(string keyId)
+        {
+            if (string.IsNullOrEmpty(keyId))
+                return true;
+
+            if (!_keyStore.TryGetValue(keyId, out var keyPair))
+                return true;
+
+            return keyPair.Expired;
         }
     }
 }

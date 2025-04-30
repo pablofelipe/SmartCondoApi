@@ -121,20 +121,20 @@ namespace SmartCondoApi.Services.Auth
         {
             lock (_keyLock)
             {
-                if (_cryptoKeyDTO?.Expiration < DateTime.UtcNow)
-                {
-                    return GenerateKeyAuth();
-                }
-
                 var cryptoService = _dependencies.CryptoService;
+
+                if (!cryptoService.IsExpired(_cryptoKeyDTO?.KeyId))
+                {
+                    return GetLastKeyAuth();
+                }
 
                 _cryptoKeyDTO = cryptoService.GenerateNewKey();
 
-                return GenerateKeyAuth();
+                return GetLastKeyAuth();
             }
         }
 
-        private static AuthKeyDTO GenerateKeyAuth()
+        private static AuthKeyDTO GetLastKeyAuth()
         {
             return new AuthKeyDTO()
             {

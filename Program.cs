@@ -9,16 +9,15 @@ using Serilog;
 using Serilog.Events;
 using SmartCondoApi.Controllers;
 using SmartCondoApi.GraphQL;
-using SmartCondoApi.GraphQL.Inputs;
 using SmartCondoApi.GraphQL.Mutations;
 using SmartCondoApi.GraphQL.Queries;
-using SmartCondoApi.GraphQL.Types.Vehicle;
 using SmartCondoApi.Infra;
 using SmartCondoApi.Models;
 using SmartCondoApi.Services.Auth;
 using SmartCondoApi.Services.Condominium;
 using SmartCondoApi.Services.Crypto;
 using SmartCondoApi.Services.Email;
+using SmartCondoApi.Services.ForgotPassword;
 using SmartCondoApi.Services.LinkGenerator;
 using SmartCondoApi.Services.Message;
 using SmartCondoApi.Services.Permissions;
@@ -92,6 +91,8 @@ builder.Services.AddScoped<IEmailService>(email =>
 });
 
 builder.Services.AddScoped<IEmailConfirmationService, EmailConfirmationService>();
+
+builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRouting();
