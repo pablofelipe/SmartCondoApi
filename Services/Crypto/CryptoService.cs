@@ -120,6 +120,9 @@ namespace SmartCondoApi.Services.Crypto
             if (!_keyStore.TryGetValue(keyId, out var keyPair))
                 return true;
 
+            if (!keyPair.Expired)
+                return keyPair.Expiration <= DateTime.UtcNow;
+
             return keyPair.Expired;
         }
     }
