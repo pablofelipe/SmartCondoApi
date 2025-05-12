@@ -4,6 +4,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace SmartCondoApi.Migrations
 {
     /// <inheritdoc />
@@ -42,20 +44,6 @@ namespace SmartCondoApi.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Condominiums", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ServiceTypes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ServiceTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -113,44 +101,6 @@ namespace SmartCondoApi.Migrations
                         principalTable: "Condominiums",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Services",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ScheduledDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    ProviderName = table.Column<string>(type: "text", nullable: false),
-                    ProviderContact = table.Column<string>(type: "text", nullable: false),
-                    Notes = table.Column<string>(type: "text", nullable: false),
-                    ServiceTypeId = table.Column<int>(type: "integer", nullable: false),
-                    CondominiumId = table.Column<int>(type: "integer", nullable: false),
-                    TowerId = table.Column<int>(type: "integer", nullable: true),
-                    FloorId = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Services", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Services_Condominiums_CondominiumId",
-                        column: x => x.CondominiumId,
-                        principalTable: "Condominiums",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Services_ServiceTypes_ServiceTypeId",
-                        column: x => x.ServiceTypeId,
-                        principalTable: "ServiceTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Services_Towers_TowerId",
-                        column: x => x.TowerId,
-                        principalTable: "Towers",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -422,12 +372,33 @@ namespace SmartCondoApi.Migrations
                         column: x => x.UserProfileId,
                         principalTable: "UserProfiles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_UserMessages_UserProfiles_UserProfileId1",
                         column: x => x.UserProfileId1,
                         principalTable: "UserProfiles",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.InsertData(
+                table: "UserTypes",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Administrador do sistema", "SystemAdministrator" },
+                    { 2, "Síndico", "CondominiumAdministrator" },
+                    { 3, "Condômino", "Resident" },
+                    { 4, "Zelador", "Janitor" },
+                    { 5, "Porteiro", "Doorman" },
+                    { 6, "Funcionário de Limpeza", "Cleaner" },
+                    { 7, "Segurança", "Security" },
+                    { 8, "Prestador de Serviços", "ServiceProvider" },
+                    { 9, "Prestador Externo", "ExternalProvider" },
+                    { 10, "Funcionário de Entrega", "DeliveryPerson" },
+                    { 11, "Visitante", "Visitor" },
+                    { 12, "Administração de Limpeza", "CleaningManager" },
+                    { 13, "Conselheiro", "ResidentCommitteeMember" },
+                    { 14, "Funcionário da Administração", "AdministrativeAssistant" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -497,21 +468,6 @@ namespace SmartCondoApi.Migrations
                 name: "IX_PasswordResetTokens_UserId",
                 table: "PasswordResetTokens",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Services_CondominiumId",
-                table: "Services",
-                column: "CondominiumId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Services_ServiceTypeId",
-                table: "Services",
-                column: "ServiceTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Services_TowerId",
-                table: "Services",
-                column: "TowerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Towers_CondominiumId",
@@ -588,9 +544,6 @@ namespace SmartCondoApi.Migrations
                 name: "PasswordResetTokens");
 
             migrationBuilder.DropTable(
-                name: "Services");
-
-            migrationBuilder.DropTable(
                 name: "UserMessages");
 
             migrationBuilder.DropTable(
@@ -601,9 +554,6 @@ namespace SmartCondoApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "ServiceTypes");
 
             migrationBuilder.DropTable(
                 name: "Messages");

@@ -9,9 +9,9 @@ namespace SmartCondoApi.Services.Auth
 {
     public class AuthService(IAuthDependencies _dependencies) : IAuthService
     {
-        private static CryptoKeyDTO _cryptoKeyDTO = null;
+        //private static CryptoKeyDTO _cryptoKeyDTO = null;
 
-        private static readonly object _keyLock = new();
+        //private static readonly object _keyLock = new();
 
         public async Task<LoginResponseDTO> Login([FromBody] Dictionary<string, string> body)
         {
@@ -25,6 +25,7 @@ namespace SmartCondoApi.Services.Auth
                 throw new InvalidCredentialsException("Senha é obrigatória.");
             }
 
+            /*
             if (Environment.GetEnvironmentVariable("DISABLE_ENCRYPTION") != "true")
             {
                 if (null == _cryptoKeyDTO)
@@ -36,6 +37,7 @@ namespace SmartCondoApi.Services.Auth
 
                 secretText = cryptoService.DecryptData(_cryptoKeyDTO.KeyId, secretText);
             }
+            */
 
             var user = await _dependencies.UserManager.FindByEmailAsync(userText);
 
@@ -119,6 +121,11 @@ namespace SmartCondoApi.Services.Auth
 
         public AuthKeyDTO GetPublicKey()
         {
+            return null;
+        }
+        /*
+        public AuthKeyDTO GetPublicKey()
+        {
             lock (_keyLock)
             {
                 var cryptoService = _dependencies.CryptoService;
@@ -144,5 +151,6 @@ namespace SmartCondoApi.Services.Auth
                 Format = "PEM"
             };
         }
+        */
     }
 }

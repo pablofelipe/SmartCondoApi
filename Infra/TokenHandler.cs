@@ -14,7 +14,22 @@ namespace SmartCondoApi.Infra
 
         private string GenerateJwtToken(string sub, string email, string role, DateTime expires)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+
+            if (string.IsNullOrEmpty(jwtKey))
+            {
+                jwtKey = configuration["Jwt:Key"];
+
+                if (string.IsNullOrEmpty(jwtKey))
+                {
+                    throw new InvalidOperationException(
+                        "Variável JWT_KEY em .env ou appsettings não encontrada");
+                }
+            }
+
+            var key = Convert.FromBase64String(jwtKey);
+
+            var securityKey = new SymmetricSecurityKey(key);
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]

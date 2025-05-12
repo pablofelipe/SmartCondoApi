@@ -17,9 +17,11 @@ namespace SmartCondoApi.Controllers
         {
             try
             {
-                var user = await _authService.Login(body);
+                var loginResponse = await _authService.Login(body);
 
-                return Ok(user);
+                Log.Information($"Usuário {loginResponse.User.Email} logado");
+
+                return Ok(loginResponse);
             }
             catch (InvalidCredentialsException ex)
             {

@@ -94,7 +94,8 @@ namespace SmartCondoApi.Models
             modelBuilder.Entity<UserMessage>()
                 .HasOne(um => um.UserProfile)
                 .WithMany()
-                .HasForeignKey(um => um.UserProfileId);
+                .HasForeignKey(um => um.UserProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
@@ -105,12 +106,6 @@ namespace SmartCondoApi.Models
             modelBuilder.Entity<User>()
                 .HasIndex(c => c.Email)
                 .IsUnique();
-
-            //modelBuilder.Entity<PasswordResetToken>()
-            //    .HasOne(prt => prt.User) 
-            //    .WithMany(l => l.PasswordResetTokens)
-            //    .HasForeignKey(prt => prt.LoginId)
-            //    .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Condominium>()
                 .HasMany(c => c.Users)

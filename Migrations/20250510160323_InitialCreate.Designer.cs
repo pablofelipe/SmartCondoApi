@@ -12,7 +12,7 @@ using SmartCondoApi.Models;
 namespace SmartCondoApi.Migrations
 {
     [DbContext(typeof(SmartCondoContext))]
-    [Migration("20250329145604_InitialCreate")]
+    [Migration("20250510160323_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace SmartCondoApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.1")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -258,77 +258,6 @@ namespace SmartCondoApi.Migrations
                     b.ToTable("PasswordResetTokens");
                 });
 
-            modelBuilder.Entity("SmartCondoApi.Models.Service", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CondominiumId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("FloorId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProviderContact")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProviderName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ScheduledDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("ServiceTypeId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("TowerId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CondominiumId");
-
-                    b.HasIndex("ServiceTypeId");
-
-                    b.HasIndex("TowerId");
-
-                    b.ToTable("Services");
-                });
-
-            modelBuilder.Entity("SmartCondoApi.Models.ServiceType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ServiceTypes");
-                });
-
             modelBuilder.Entity("SmartCondoApi.Models.Tower", b =>
                 {
                     b.Property<int>("Id")
@@ -539,6 +468,92 @@ namespace SmartCondoApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Administrador do sistema",
+                            Name = "SystemAdministrator"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Síndico",
+                            Name = "CondominiumAdministrator"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Condômino",
+                            Name = "Resident"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Zelador",
+                            Name = "Janitor"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Porteiro",
+                            Name = "Doorman"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Funcionário de Limpeza",
+                            Name = "Cleaner"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "Segurança",
+                            Name = "Security"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Description = "Prestador de Serviços",
+                            Name = "ServiceProvider"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Description = "Prestador Externo",
+                            Name = "ExternalProvider"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Description = "Funcionário de Entrega",
+                            Name = "DeliveryPerson"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Description = "Visitante",
+                            Name = "Visitor"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Description = "Administração de Limpeza",
+                            Name = "CleaningManager"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Description = "Conselheiro",
+                            Name = "ResidentCommitteeMember"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Description = "Funcionário da Administração",
+                            Name = "AdministrativeAssistant"
+                        });
                 });
 
             modelBuilder.Entity("SmartCondoApi.Models.Vehicle", b =>
@@ -677,31 +692,6 @@ namespace SmartCondoApi.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SmartCondoApi.Models.Service", b =>
-                {
-                    b.HasOne("SmartCondoApi.Models.Condominium", "Condominium")
-                        .WithMany("Services")
-                        .HasForeignKey("CondominiumId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SmartCondoApi.Models.ServiceType", "ServiceType")
-                        .WithMany("Services")
-                        .HasForeignKey("ServiceTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SmartCondoApi.Models.Tower", "Tower")
-                        .WithMany("Services")
-                        .HasForeignKey("TowerId");
-
-                    b.Navigation("Condominium");
-
-                    b.Navigation("ServiceType");
-
-                    b.Navigation("Tower");
-                });
-
             modelBuilder.Entity("SmartCondoApi.Models.Tower", b =>
                 {
                     b.HasOne("SmartCondoApi.Models.Condominium", "Condominium")
@@ -735,7 +725,7 @@ namespace SmartCondoApi.Migrations
                     b.HasOne("SmartCondoApi.Models.UserProfile", "UserProfile")
                         .WithMany()
                         .HasForeignKey("UserProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SmartCondoApi.Models.UserProfile", null)
@@ -785,8 +775,6 @@ namespace SmartCondoApi.Migrations
                 {
                     b.Navigation("Messages");
 
-                    b.Navigation("Services");
-
                     b.Navigation("Towers");
 
                     b.Navigation("Users");
@@ -797,16 +785,9 @@ namespace SmartCondoApi.Migrations
                     b.Navigation("UserMessages");
                 });
 
-            modelBuilder.Entity("SmartCondoApi.Models.ServiceType", b =>
-                {
-                    b.Navigation("Services");
-                });
-
             modelBuilder.Entity("SmartCondoApi.Models.Tower", b =>
                 {
                     b.Navigation("Messages");
-
-                    b.Navigation("Services");
 
                     b.Navigation("Users");
                 });

@@ -23,7 +23,6 @@ using SmartCondoApi.Services.Message;
 using SmartCondoApi.Services.Permissions;
 using SmartCondoApi.Services.User;
 using SmartCondoApi.Services.Vehicle;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +45,26 @@ builder.Services.AddIdentity<User, IdentityRole<long>>(options =>
 .AddEntityFrameworkStores<SmartCondoContext>()
 .AddDefaultTokenProviders();
 
-var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+//Console.WriteLine($"jwtKey: {jwtKey}");
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    jwtKey = builder.Configuration["Jwt:Key"];
+
+    if (string.IsNullOrEmpty(jwtKey)) { 
+        throw new InvalidOperationException(
+            "Configure variável JWT_KEY no arquivo .env or appsettings");
+    }
+}
+
+var key = Convert.FromBase64String(jwtKey);
+if (key.Length < 32)
+{
+    throw new InvalidOperationException(
+        "Configure uma JWT Key válida com pelo menos 32 caracteres no arquivo .env");
+}
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -202,10 +220,74 @@ builder.Services
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+if (args.Contains("migrate"))
 {
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<SmartCondoContext>();
+    Console.WriteLine("Applying migrations...");
+    context.Database.Migrate();
+    Console.WriteLine("Migrations applied successfully!");
+    return;
+}
+
+if (args.Contains("seed"))
+{
+    using var scope = app.Services.CreateScope();
+    Console.WriteLine("Seeding database...");
+
+    // Migration applied
+    var context = scope.ServiceProvider.GetRequiredService<SmartCondoContext>();
+    context.Database.Migrate();
+
+    // Agora executar os seeds
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<long>>>();
     await SmartCondoContext.SeedPermissionsAsync(roleManager);
+
+    // Seed do admin
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var adminEmail = builder.Configuration["ADMIN_EMAIL"];
+    var adminPassword = builder.Configuration["ADMIN_PASSWORD"];
+
+    if (!context.Users.Any(u => u.Email == adminEmail))
+    {
+        var adminProfile = new UserProfile
+        {
+            Name = "Administrador do Sistema",
+            UserTypeId = 1, // SystemAdministrator
+            Address = "Celso Garcia Avenue, 1907",
+            Phone1 = "5511985356026",
+            RegistrationNumber = "ADM001"
+        };
+
+        context.UserProfiles.Add(adminProfile);
+        await context.SaveChangesAsync();
+
+        var adminUser = new User
+        {
+            Id = adminProfile.Id,
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true,
+            Enabled = true
+        };
+
+        var result = await userManager.CreateAsync(adminUser, adminPassword);
+
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "SystemAdministrator");
+        }
+        else
+        {
+            // Rollback em caso de erro
+            context.UserProfiles.Remove(adminProfile);
+            await context.SaveChangesAsync();
+            throw new Exception($"Falha ao criar usuário: {string.Join(", ", result.Errors)}");
+        }
+    }
+
+    Console.WriteLine("Database seeded successfully!");
+    return;
 }
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
@@ -224,6 +306,8 @@ app.Use(async (context, next) =>
 });
 
 app.MapGraphQL();
+
+app.UseHttpsRedirection();
 
 if (app.Environment.IsDevelopment())
 {

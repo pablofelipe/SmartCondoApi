@@ -56,7 +56,6 @@ namespace SmartCondoApi.Models
         public ICollection<Message> SentMessages { get; set; }
 
         // Relacionamento com Message (Recipient)
-        [InverseProperty("UserProfile")]
         [JsonIgnore]
         public virtual ICollection<UserMessage> UserMessages { get; set; }
     }
